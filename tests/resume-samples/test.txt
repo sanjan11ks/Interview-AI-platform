@@ -1,0 +1,1 @@
+John Doe, Frontend Developer, 5 years experience with React, JavaScript, TypeScript, Node.js, CSS, HTML, Webpack, Jest, Git
