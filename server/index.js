@@ -18,8 +18,7 @@ const videosRoutes = require('./routes/videos');
 const brandingRoutes = require('./routes/branding');
 
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ERROR: ANTHROPIC_API_KEY is not set. Please create a .env file.');
-  process.exit(1);
+  console.warn('⚠  ANTHROPIC_API_KEY not set. Admin must add it via Settings before interviews can run.');
 }
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './server/uploads');

@@ -58,7 +58,15 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
       });
     }
 
-    const roleData = await detectRoleFromResume(resumeText);
+    let roleData;
+    try {
+      roleData = await detectRoleFromResume(resumeText);
+    } catch (err) {
+      if (err.message === 'NO_API_KEY') {
+        return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
+      }
+      throw err;
+    }
 
     // Resolve admin_id from invite token (if provided)
     const sessionId = uuidv4();

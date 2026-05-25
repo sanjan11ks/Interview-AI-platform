@@ -3,7 +3,17 @@ require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env'), overr
 const AnthropicModule = require('@anthropic-ai/sdk');
 const Anthropic = AnthropicModule.default || AnthropicModule;
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// anthropic client is created lazily so missing key at startup doesn't crash
+let _anthropic = null;
+function getClient() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('NO_API_KEY');
+  // Re-create if key changed (e.g. updated via Settings)
+  if (!_anthropic || _anthropic.apiKey !== key) {
+    _anthropic = new Anthropic({ apiKey: key });
+  }
+  return _anthropic;
+}
 const MODEL = 'claude-haiku-4-5-20251001';
 
 function parseJSON(text) {
@@ -27,7 +37,7 @@ async function withRetry(fn, attempts = 3, delayMs = 1000) {
 
 async function detectRoleFromResume(resumeText) {
   return withRetry(async () => {
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 1000,
       system: `You are a senior technical recruiter with expertise in identifying tech roles.
@@ -55,7 +65,7 @@ async function generateQuestions(role, skills, experienceLevel, behavioralPositi
       ? 'Put the 1-2 behavioural questions LAST (sequences 5-6).'
       : 'Put the 1-2 behavioural questions FIRST (sequences 1-2).';
 
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 2000,
       system: `You are a senior technical interviewer. Generate adaptive interview questions.
@@ -104,7 +114,7 @@ async function analyseAnswer(question, transcript, role, durationSeconds) {
       ? transcript
       : '[No response provided or response was too short to analyse]';
 
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 1500,
       system: `You are a technical interview evaluator. Analyse answers fairly and constructively.
@@ -147,7 +157,7 @@ async function generateFinalAnalysis(session, questionsWithAnswers) {
     Summary: ${analysis.answer_summary || 'No answer provided'}`;
     }).join('\n\n');
 
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 2500,
       system: `You are a senior hiring analyst. Write detailed, constructive candidate assessments.
