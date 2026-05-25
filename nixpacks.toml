@@ -4,5 +4,8 @@ nixPkgs = ["nodejs_22", "python3", "gcc", "gnumake"]
 [phases.install]
 cmds = ["npm ci --omit=dev"]
 
+[phases.build]
+cmds = []
+
 [start]
 cmd = "node server/index.js"
