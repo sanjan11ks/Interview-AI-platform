@@ -4,6 +4,5 @@ server/uploads/
 *.db
 *.db-shm
 *.db-wal
-client/dist/
 server_test.log
 server/server_test.log
