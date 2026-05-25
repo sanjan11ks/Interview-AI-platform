@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "AI-powered technical interview platform",
   "main": "server/index.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
