@@ -592,8 +592,8 @@ export default function Admin() {
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
                 <h4 style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--accent-cyan)' }}>System Info</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.4rem 1rem', fontSize: '0.85rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Auth mode</span>
-                  <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{isMultiAdmin ? 'JWT (multi-admin)' : 'Legacy password'}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>Account type</span>
+                  <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{isMultiAdmin ? 'Named account (' + adminInfo?.email + ')' : 'Single admin mode'}</span>
                   <span style={{ color: 'var(--text-muted)' }}>Model</span>
                   <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>claude-haiku-4-5-20251001</span>
                   <span style={{ color: 'var(--text-muted)' }}>Database</span>

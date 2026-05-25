@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { runMigrations } = require('./migrations');
 
-const DB_PATH = path.join(__dirname, '..', '..', 'interview.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', '..', 'interview.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 let db;

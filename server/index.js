@@ -21,7 +21,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('⚠  ANTHROPIC_API_KEY not set. Admin must add it via Settings before interviews can run.');
 }
 
-const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './server/uploads');
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || (process.env.NODE_ENV === 'production' ? '/data/uploads' : './server/uploads'));
 fs.mkdirSync(path.join(UPLOAD_DIR, 'resumes'), { recursive: true });
 fs.mkdirSync(path.join(UPLOAD_DIR, 'recordings'), { recursive: true });
 fs.mkdirSync(path.join(UPLOAD_DIR, 'reports'), { recursive: true });
