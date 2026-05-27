@@ -7,7 +7,9 @@ const { getDb } = require('../db/database');
 
 const router = express.Router();
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './server/uploads';
+const UPLOAD_DIR = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : path.resolve(__dirname, '..', '..', 'server', 'uploads');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

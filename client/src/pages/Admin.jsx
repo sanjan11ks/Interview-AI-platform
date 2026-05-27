@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ScoreGauge from '../components/ScoreGauge';
 import ReportCard from '../components/ReportCard';
 
@@ -530,12 +530,13 @@ export default function Admin() {
                 {detail.qa?.map((qa, i) => (
                   <div key={qa.id}>
                     <ReportCard qa={{ question: qa, answer: { ...qa.answer, analysis: qa.analysis } }} index={i} />
-                    {qa.answer?.videoFile && (
-                      <div style={{ margin: '0.5rem 0 0.25rem', padding: '0.75rem 1rem', background: 'var(--bg-elevated)', borderRadius: '0 0 12px 12px', borderTop: '1px solid var(--border)' }}>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>📹 Interview Recording</p>
-                        <VideoPlayer sessionId={detail.session?.id} videoFile={qa.answer.videoFile} token={token} />
-                      </div>
-                    )}
+                    <div style={{ margin: '0.5rem 0 0.25rem', padding: '0.75rem 1rem', background: 'var(--bg-elevated)', borderRadius: '0 0 12px 12px', borderTop: '1px solid var(--border)' }}>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>📹 Interview Recording</p>
+                      {qa.answer?.videoFile
+                        ? <VideoPlayer sessionId={detail.session?.id} videoFile={qa.answer.videoFile} token={token} />
+                        : <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No recording saved for this question.</p>
+                      }
+                    </div>
                   </div>
                 ))}
               </div>
@@ -730,29 +731,46 @@ export default function Admin() {
 function VideoPlayer({ sessionId, videoFile, token }) {
   const [src, setSrc] = useState(null);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const isJwt = token && token.split('.').length === 3;
+  const blobUrlRef = useRef(null);
 
   useEffect(() => {
-    if (!videoFile) return;
+    if (!videoFile) { setLoading(false); return; }
+    setError(false);
+    setLoading(true);
+
     if (isJwt) {
-      // Fetch as blob (JWT can't go in query string)
       fetch(`/api/videos/${sessionId}/${videoFile}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       })
         .then(r => {
-          if (!r.ok) throw new Error('Video not found');
+          if (!r.ok) throw new Error(`${r.status}`);
           return r.blob();
         })
-        .then(blob => setSrc(URL.createObjectURL(blob)))
-        .catch(() => setError(true));
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          setSrc(url);
+          setLoading(false);
+        })
+        .catch(() => { setError(true); setLoading(false); });
     } else {
       setSrc(`/api/videos/${sessionId}/${videoFile}?token=${token}`);
+      setLoading(false);
     }
-    return () => { if (src) URL.revokeObjectURL(src); };
+
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
   }, [sessionId, videoFile]);
 
-  if (error) return <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Video unavailable.</p>;
-  if (!src) return <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading video…</p>;
+  if (error) return <p style={{ fontSize: '0.8rem', color: '#EF4444' }}>⚠ Video file not found on server. Check that UPLOAD_DIR is set to a persistent volume in your deployment.</p>;
+  if (loading) return <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading video…</p>;
+  if (!src) return null;
 
   return (
     <video
