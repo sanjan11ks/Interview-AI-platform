@@ -123,10 +123,12 @@ const VideoRecorder = forwardRef(function VideoRecorder(
     // Save recording blob
     try {
       const formData = new FormData();
-      formData.append('recording', blob, `q${questionSequence}.webm`);
+      // Text fields MUST come before the file so multer can read them
+      // in the destination() callback when deciding where to save
       formData.append('sessionId', sessionId);
       formData.append('questionId', questionId);
       formData.append('questionSequence', String(questionSequence));
+      formData.append('recording', blob, `q${questionSequence}.webm`);
 
       await fetch('/api/recording/save', { method: 'POST', body: formData });
     } catch (_) {}
