@@ -125,9 +125,15 @@ router.get('/report/:sessionId/download', requireAdmin, (req, res) => {
 // ── Settings: API key ────────────────────────────────────────────────────────
 router.get('/settings', requireAdmin, (req, res) => {
   try {
-    const envContent = fs.readFileSync(ENV_PATH, 'utf8');
-    const match = envContent.match(/ANTHROPIC_API_KEY=(.*)$/m);
-    const key = match ? match[1].trim() : '';
+    // Read from DB (persistent) then fall back to env var
+    const db = getDb();
+    let key = '';
+    try {
+      const setting = db.prepare("SELECT value FROM global_settings WHERE key = 'anthropic_api_key'").get();
+      key = setting?.value || '';
+    } catch {}
+    if (!key) key = process.env.ANTHROPIC_API_KEY || '';
+
     const masked = key.length > 12
       ? key.substring(0, 10) + '…' + key.substring(key.length - 4)
       : key ? '••••••••' : '';
@@ -144,15 +150,15 @@ router.post('/settings/api-key', requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Invalid key. It should start with sk-ant-' });
     }
 
-    let envContent = '';
-    try { envContent = fs.readFileSync(ENV_PATH, 'utf8'); } catch {}
+    // Save to DB so it persists across redeploys
+    const db = getDb();
+    db.prepare(`
+      INSERT INTO global_settings (key, value, updated_at)
+      VALUES ('anthropic_api_key', ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    `).run(apiKey);
 
-    if (envContent.match(/^ANTHROPIC_API_KEY=/m)) {
-      envContent = envContent.replace(/^ANTHROPIC_API_KEY=.*$/m, `ANTHROPIC_API_KEY=${apiKey}`);
-    } else {
-      envContent = `ANTHROPIC_API_KEY=${apiKey}\n${envContent}`;
-    }
-    fs.writeFileSync(ENV_PATH, envContent);
+    // Also set in current process memory
     process.env.ANTHROPIC_API_KEY = apiKey;
 
     const masked = apiKey.substring(0, 10) + '…' + apiKey.substring(apiKey.length - 4);

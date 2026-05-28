@@ -16,6 +16,15 @@ function getDb() {
     const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
     db.exec(schema);
     runMigrations(db);
+
+    // Restore API key from DB into process.env so it survives redeploys
+    try {
+      const setting = db.prepare("SELECT value FROM global_settings WHERE key = 'anthropic_api_key'").get();
+      if (setting?.value) {
+        process.env.ANTHROPIC_API_KEY = setting.value;
+        console.log('  ✓ Anthropic API key loaded from database');
+      }
+    } catch {}
   }
   return db;
 }
