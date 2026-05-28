@@ -784,6 +784,11 @@ function VideoPlayer({ sessionId, videoFile, token }) {
           return r.blob();
         })
         .then(blob => {
+          if (blob.size === 0) {
+            setErrorMsg('Recording file is empty (0 bytes) — the recording was not captured properly.');
+            setLoading(false);
+            return;
+          }
           const url = URL.createObjectURL(blob);
           blobUrlRef.current = url;
           setSrc(url);
@@ -809,8 +814,11 @@ function VideoPlayer({ sessionId, videoFile, token }) {
 
   return (
     <video
+      key={src}
       src={src}
       controls
+      playsInline
+      preload="metadata"
       style={{ width: '100%', maxWidth: 480, borderRadius: 8, background: '#000', display: 'block' }}
     />
   );

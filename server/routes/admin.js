@@ -297,7 +297,12 @@ router.get('/debug/storage', requireAdmin, (req, res) => {
       sessions = fs.readdirSync(recordingsDir).map(sessionDir => {
         const sessionPath = path.join(recordingsDir, sessionDir);
         let files = [];
-        try { files = fs.readdirSync(sessionPath); } catch {}
+        try {
+          files = fs.readdirSync(sessionPath).map(f => {
+            const stat = fs.statSync(path.join(sessionPath, f));
+            return { name: f, bytes: stat.size };
+          });
+        } catch {}
         return { sessionDir, files };
       });
     }
