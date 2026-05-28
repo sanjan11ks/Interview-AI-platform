@@ -65,7 +65,7 @@ router.get('/me', requireAdmin, (req, res) => {
   try {
     const db = getDb();
     const admin = db.prepare('SELECT id, email, company_name, logo_path, brand_color, behavioral_position FROM admin_accounts WHERE id = ?').get(req.adminId);
-    if (!admin) return res.status(404).json({ error: 'Admin not found.' });
+    if (!admin) return res.status(401).json({ error: 'Account no longer exists. Please log in again.' });
     res.json({
       adminId: admin.id,
       email: admin.email,

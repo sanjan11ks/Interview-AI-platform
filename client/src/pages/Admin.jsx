@@ -63,6 +63,12 @@ export default function Admin() {
   async function fetchAdminInfo() {
     try {
       const res = await fetch('/api/auth/me', { headers: authHeaders(token) });
+      if (res.status === 401 || res.status === 404) {
+        // Token is stale (DB was reset) — force logout
+        sessionStorage.removeItem('adminToken');
+        setToken('');
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setAdminInfo(data);
