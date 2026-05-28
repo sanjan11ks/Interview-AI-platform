@@ -281,4 +281,29 @@ router.get('/violations/:sessionId', requireAdmin, (req, res) => {
   }
 });
 
+// ── Debug: show server paths and recording files ─────────────────────────────
+router.get('/debug/storage', requireAdmin, (req, res) => {
+  try {
+    const recordingsDir = path.join(UPLOAD_DIR, 'recordings');
+    const exists = fs.existsSync(recordingsDir);
+    let sessions = [];
+    if (exists) {
+      sessions = fs.readdirSync(recordingsDir).map(sessionDir => {
+        const sessionPath = path.join(recordingsDir, sessionDir);
+        let files = [];
+        try { files = fs.readdirSync(sessionPath); } catch {}
+        return { sessionDir, files };
+      });
+    }
+    res.json({
+      UPLOAD_DIR,
+      NODE_ENV: process.env.NODE_ENV,
+      recordingsDirExists: exists,
+      sessions,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

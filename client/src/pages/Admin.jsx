@@ -736,22 +736,26 @@ export default function Admin() {
 // ── Video player component ─────────────────────────────────────────────────────
 function VideoPlayer({ sessionId, videoFile, token }) {
   const [src, setSrc] = useState(null);
-  const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [loading, setLoading] = useState(true);
   const isJwt = token && token.split('.').length === 3;
   const blobUrlRef = useRef(null);
 
   useEffect(() => {
     if (!videoFile) { setLoading(false); return; }
-    setError(false);
+    setErrorMsg(null);
     setLoading(true);
 
     if (isJwt) {
       fetch(`/api/videos/${sessionId}/${videoFile}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       })
-        .then(r => {
-          if (!r.ok) throw new Error(`${r.status}`);
+        .then(async r => {
+          if (!r.ok) {
+            let msg = `HTTP ${r.status}`;
+            try { const j = await r.json(); msg += `: ${j.error}`; } catch {}
+            throw new Error(msg);
+          }
           return r.blob();
         })
         .then(blob => {
@@ -760,7 +764,7 @@ function VideoPlayer({ sessionId, videoFile, token }) {
           setSrc(url);
           setLoading(false);
         })
-        .catch(() => { setError(true); setLoading(false); });
+        .catch(e => { setErrorMsg(e.message); setLoading(false); });
     } else {
       setSrc(`/api/videos/${sessionId}/${videoFile}?token=${token}`);
       setLoading(false);
@@ -774,7 +778,7 @@ function VideoPlayer({ sessionId, videoFile, token }) {
     };
   }, [sessionId, videoFile]);
 
-  if (error) return <p style={{ fontSize: '0.8rem', color: '#EF4444' }}>⚠ Video file not found on server. Check that UPLOAD_DIR is set to a persistent volume in your deployment.</p>;
+  if (errorMsg) return <p style={{ fontSize: '0.8rem', color: '#EF4444' }}>⚠ {errorMsg}</p>;
   if (loading) return <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Loading video…</p>;
   if (!src) return null;
 
