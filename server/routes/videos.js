@@ -4,11 +4,9 @@ const fs = require('fs');
 const { requireAdmin } = require('../middleware/auth');
 const { getDb } = require('../db/database');
 
-const router = express.Router();
+const { UPLOAD_DIR } = require('../utils/paths');
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR
-  ? path.resolve(process.env.UPLOAD_DIR)
-  : path.join(__dirname, '..', '..', 'server', 'uploads');
+const router = express.Router();
 
 /**
  * GET /api/videos/:sessionId/:filename

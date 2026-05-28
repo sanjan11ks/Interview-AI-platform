@@ -6,11 +6,9 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db/database');
 const { requireAdmin } = require('../middleware/auth');
 
-const router = express.Router();
+const { UPLOAD_DIR } = require('../utils/paths');
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR
-  ? path.resolve(process.env.UPLOAD_DIR)
-  : path.join(__dirname, '..', '..', 'server', 'uploads');
+const router = express.Router();
 
 const ENV_PATH = path.join(__dirname, '..', '..', '.env');
 
