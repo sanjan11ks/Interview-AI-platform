@@ -49,6 +49,10 @@ export default function Admin() {
   const [inviteLabel, setInviteLabel] = useState('');
   const [inviteMsg, setInviteMsg] = useState('');
 
+  // Storage debug state
+  const [storageDebug, setStorageDebug] = useState(null);
+  const [storageLoading, setStorageLoading] = useState(false);
+
   // Admin info
   const [adminInfo, setAdminInfo] = useState(null);
 
@@ -598,7 +602,7 @@ export default function Admin() {
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
                 <h4 style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--accent-cyan)' }}>System Info</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.4rem 1rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.4rem 1rem', fontSize: '0.85rem', marginBottom: '1rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Account type</span>
                   <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{isMultiAdmin ? 'Named account (' + adminInfo?.email + ')' : 'Single admin mode'}</span>
                   <span style={{ color: 'var(--text-muted)' }}>Model</span>
@@ -608,6 +612,27 @@ export default function Admin() {
                   <span style={{ color: 'var(--text-muted)' }}>Video storage</span>
                   <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>Local filesystem (signed URLs)</span>
                 </div>
+                <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.9rem' }}
+                  disabled={storageLoading}
+                  onClick={async () => {
+                    setStorageLoading(true);
+                    setStorageDebug(null);
+                    try {
+                      const r = await fetch('/api/admin/debug/storage', { headers: authHeaders(token) });
+                      const d = await r.json();
+                      setStorageDebug(d);
+                    } catch (e) {
+                      setStorageDebug({ error: e.message });
+                    }
+                    setStorageLoading(false);
+                  }}>
+                  {storageLoading ? 'Checking…' : '🔍 Check Storage'}
+                </button>
+                {storageDebug && (
+                  <pre style={{ marginTop: '0.75rem', fontSize: '0.75rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.75rem', overflowX: 'auto', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                    {JSON.stringify(storageDebug, null, 2)}
+                  </pre>
+                )}
               </div>
             </div>
           </div>
