@@ -15,6 +15,10 @@ function runMigrations(db) {
     db.exec("ALTER TABLE sessions ADD COLUMN violation_count INTEGER DEFAULT 0");
   if (!sessionCols.includes('flagged'))
     db.exec("ALTER TABLE sessions ADD COLUMN flagged INTEGER DEFAULT 0");
+  if (!sessionCols.includes('consent_at'))
+    db.exec("ALTER TABLE sessions ADD COLUMN consent_at DATETIME");
+  if (!sessionCols.includes('consent_ip'))
+    db.exec("ALTER TABLE sessions ADD COLUMN consent_ip TEXT");
 
   // ── questions additions ──────────────────────────────────────────────────
   const questionCols = db.pragma('table_info(questions)').map(c => c.name);

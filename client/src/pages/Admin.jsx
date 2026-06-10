@@ -453,8 +453,14 @@ export default function Admin() {
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                   {detail.session?.confirmed_role} · {detail.session?.experience_level}
                 </p>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '1rem' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '0.4rem' }}>
                   {detail.session?.candidate_email} · {new Date(detail.session?.created_at).toLocaleString()}
+                </p>
+                <p style={{ fontSize: '0.78rem', marginBottom: '1rem' }}>
+                  {detail.session?.consent_at
+                    ? <span style={{ color: '#10B981' }}>✔ Consent recorded {new Date(detail.session.consent_at).toLocaleString()}</span>
+                    : <span style={{ color: '#F59E0B' }}>⚠ No consent record (pre-compliance session)</span>
+                  }
                 </p>
                 {detail.finalAnalysis?.recommended_next_step && (
                   <span className="pill pill-blue">{detail.finalAnalysis.recommended_next_step}</span>
@@ -541,7 +547,32 @@ export default function Admin() {
                   <div key={qa.id}>
                     <ReportCard qa={{ question: qa, answer: { ...qa.answer, analysis: qa.analysis } }} index={i} />
                     <div style={{ margin: '0.5rem 0 0.25rem', padding: '0.75rem 1rem', background: 'var(--bg-elevated)', borderRadius: '0 0 12px 12px', borderTop: '1px solid var(--border)' }}>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>📹 Interview Recording</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>📹 Interview Recording</p>
+                        {qa.answer?.videoFile && (
+                          <a
+                            href={`/api/videos/${detail.session?.id}/${qa.answer.videoFile}${token?.split('.').length === 3 ? '' : `?token=${token}`}`}
+                            download={qa.answer.videoFile}
+                            onClick={e => {
+                              // For JWT auth, fetch blob and trigger download
+                              if (token?.split('.').length === 3) {
+                                e.preventDefault();
+                                fetch(`/api/videos/${detail.session?.id}/${qa.answer.videoFile}`, { headers: { 'Authorization': `Bearer ${token}` } })
+                                  .then(r => r.blob())
+                                  .then(blob => {
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url; a.download = qa.answer.videoFile;
+                                    a.click(); URL.revokeObjectURL(url);
+                                  });
+                              }
+                            }}
+                            style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none' }}
+                          >
+                            ⬇ Download
+                          </a>
+                        )}
+                      </div>
                       {qa.answer?.videoFile
                         ? <VideoPlayer sessionId={detail.session?.id} videoFile={qa.answer.videoFile} token={token} />
                         : <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No recording saved for this question.</p>

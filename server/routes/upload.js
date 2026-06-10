@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const router = express.Router();
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './server/uploads';
+const { UPLOAD_DIR } = require('../utils/paths');
 const MAX_SIZE = (parseInt(process.env.MAX_FILE_SIZE_MB) || 5) * 1024 * 1024;
 
 const storage = multer.diskStorage({
@@ -43,9 +43,12 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
 
-    const { candidateName, candidateEmail, inviteToken } = req.body;
+    const { candidateName, candidateEmail, inviteToken, consentGiven } = req.body;
     if (!candidateName || !candidateEmail) {
       return res.status(400).json({ error: 'Name and email are required.' });
+    }
+    if (!consentGiven || consentGiven !== 'true') {
+      return res.status(400).json({ error: 'You must provide consent to proceed with the interview.' });
     }
 
     let resumeText;
@@ -77,10 +80,12 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
       if (invite) adminId = invite.admin_id;
     }
 
+    const consentIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || null;
+
     db.prepare(`
-      INSERT INTO sessions (id, candidate_name, candidate_email, resume_path, resume_text, detected_role, experience_level, status, admin_id, invite_token)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
-    `).run(sessionId, candidateName, candidateEmail, req.file.path, resumeText, roleData.primary_role, roleData.experience_level, adminId, inviteToken || null);
+      INSERT INTO sessions (id, candidate_name, candidate_email, resume_path, resume_text, detected_role, experience_level, status, admin_id, invite_token, consent_at, consent_ip)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, CURRENT_TIMESTAMP, ?)
+    `).run(sessionId, candidateName, candidateEmail, req.file.path, resumeText, roleData.primary_role, roleData.experience_level, adminId, inviteToken || null, consentIp);
 
     res.json({
       sessionId,
