@@ -20,6 +20,11 @@ function runMigrations(db) {
   if (!sessionCols.includes('consent_ip'))
     db.exec("ALTER TABLE sessions ADD COLUMN consent_ip TEXT");
 
+  // ── admin_accounts additions ─────────────────────────────────────────────
+  const adminCols = db.pragma('table_info(admin_accounts)').map(c => c.name);
+  if (!adminCols.includes('api_key'))
+    db.exec("ALTER TABLE admin_accounts ADD COLUMN api_key TEXT");
+
   // ── questions additions ──────────────────────────────────────────────────
   const questionCols = db.pragma('table_info(questions)').map(c => c.name);
   if (!questionCols.includes('is_behavioral'))

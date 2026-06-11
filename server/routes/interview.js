@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db/database');
 const { generateQuestions } = require('../services/claude');
+const { getApiKeyForAdmin } = require('../utils/apiKey');
 
 const router = express.Router();
 
@@ -52,7 +53,10 @@ router.post('/start', async (req, res) => {
     const skills = extractSkillsFromText(session.resume_text || '');
     const experienceLevel = session.experience_level || 'mid';
 
-    const { questions } = await generateQuestions(confirmedRole, skills, experienceLevel, behavioralPosition);
+    // Use this session's admin's API key
+    const adminApiKey = getApiKeyForAdmin(adminId);
+
+    const { questions } = await generateQuestions(confirmedRole, skills, experienceLevel, behavioralPosition, adminApiKey);
 
     const insertQ = db.prepare(`
       INSERT INTO questions (id, session_id, sequence, question_text, competency, difficulty, time_limit_seconds, expected_keywords, follow_up_hint, is_behavioral)
@@ -83,6 +87,9 @@ router.post('/start', async (req, res) => {
     res.json({ questions: candidateQuestions });
   } catch (err) {
     console.error('Interview start error:', err);
+    if (err.message === 'NO_API_KEY') {
+      return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
+    }
     res.status(500).json({ error: 'Failed to generate questions.', detail: err.message });
   }
 });

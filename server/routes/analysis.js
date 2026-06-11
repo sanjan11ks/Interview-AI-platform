@@ -3,11 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const { getDb } = require('../db/database');
 const { analyseAnswer, generateFinalAnalysis } = require('../services/claude');
+const { getApiKeyForAdmin } = require('../utils/apiKey');
 const { generateReport } = require('../services/reportGenerator');
 
+const { UPLOAD_DIR } = require('../utils/paths');
 const router = express.Router();
-
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './server/uploads';
 
 router.post('/answer', async (req, res) => {
   try {
@@ -30,7 +30,8 @@ router.post('/answer', async (req, res) => {
     const transcript = answer?.transcript || '';
     const duration = answer?.duration_seconds || 0;
 
-    const analysis = await analyseAnswer(question, transcript, session.confirmed_role, duration);
+    const adminApiKey = getApiKeyForAdmin(session.admin_id);
+    const analysis = await analyseAnswer(question, transcript, session.confirmed_role, duration, adminApiKey);
 
     if (answer) {
       db.prepare('UPDATE answers SET score = ?, analysis_json = ? WHERE id = ?')
@@ -40,6 +41,9 @@ router.post('/answer', async (req, res) => {
     res.json({ score: analysis.score, analysis });
   } catch (err) {
     console.error('Answer analysis error:', err);
+    if (err.message === 'NO_API_KEY') {
+      return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
+    }
     res.status(500).json({ error: 'Analysis failed.', detail: err.message });
   }
 });
@@ -68,7 +72,8 @@ router.post('/finalise', async (req, res) => {
       return { ...q, score: ans.score || 0, analysis_json: ans.analysis_json, ...analysis };
     });
 
-    const finalAnalysis = await generateFinalAnalysis(session, questionsWithAnswers);
+    const adminApiKey = getApiKeyForAdmin(session.admin_id);
+    const finalAnalysis = await generateFinalAnalysis(session, questionsWithAnswers, adminApiKey);
 
     // Generate PDF report
     const reportsDir = path.join(UPLOAD_DIR, 'reports');
@@ -86,6 +91,9 @@ router.post('/finalise', async (req, res) => {
     res.json({ overallScore: finalAnalysis.overall_score, grade: finalAnalysis.grade, reportPath });
   } catch (err) {
     console.error('Finalise error:', err);
+    if (err.message === 'NO_API_KEY') {
+      return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
+    }
     res.status(500).json({ error: 'Finalisation failed.', detail: err.message });
   }
 });

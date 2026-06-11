@@ -3,18 +3,18 @@ require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env'), overr
 const AnthropicModule = require('@anthropic-ai/sdk');
 const Anthropic = AnthropicModule.default || AnthropicModule;
 
-// anthropic client is created lazily so missing key at startup doesn't crash
-let _anthropic = null;
-function getClient() {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error('NO_API_KEY');
-  // Re-create if key changed (e.g. updated via Settings)
-  if (!_anthropic || _anthropic.apiKey !== key) {
-    _anthropic = new Anthropic({ apiKey: key });
-  }
-  return _anthropic;
-}
 const MODEL = 'claude-haiku-4-5-20251001';
+
+// Cache clients by key so we don't create a new instance on every request
+const _clients = new Map();
+function getClient(apiKey) {
+  const key = apiKey || process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('NO_API_KEY');
+  if (!_clients.has(key)) {
+    _clients.set(key, new Anthropic({ apiKey: key }));
+  }
+  return _clients.get(key);
+}
 
 function parseJSON(text) {
   let cleaned = text.trim();
@@ -35,9 +35,9 @@ async function withRetry(fn, attempts = 3, delayMs = 1000) {
   }
 }
 
-async function detectRoleFromResume(resumeText) {
+async function detectRoleFromResume(resumeText, apiKey) {
   return withRetry(async () => {
-    const response = await getClient().messages.create({
+    const response = await getClient(apiKey).messages.create({
       model: MODEL,
       max_tokens: 1000,
       system: `You are a senior technical recruiter with expertise in identifying tech roles.
@@ -59,13 +59,13 @@ Analyse the resume text and return ONLY valid JSON. No markdown, no explanation.
   });
 }
 
-async function generateQuestions(role, skills, experienceLevel, behavioralPosition = 'start') {
+async function generateQuestions(role, skills, experienceLevel, behavioralPosition = 'start', apiKey) {
   return withRetry(async () => {
     const positionNote = behavioralPosition === 'end'
       ? 'Put the 1-2 behavioural questions LAST (sequences 5-6).'
       : 'Put the 1-2 behavioural questions FIRST (sequences 1-2).';
 
-    const response = await getClient().messages.create({
+    const response = await getClient(apiKey).messages.create({
       model: MODEL,
       max_tokens: 2000,
       system: `You are a senior technical interviewer. Generate adaptive interview questions.
@@ -108,13 +108,13 @@ Return JSON:
   });
 }
 
-async function analyseAnswer(question, transcript, role, durationSeconds) {
+async function analyseAnswer(question, transcript, role, durationSeconds, apiKey) {
   return withRetry(async () => {
     const safeTranscript = transcript && transcript.trim().length >= 10
       ? transcript
       : '[No response provided or response was too short to analyse]';
 
-    const response = await getClient().messages.create({
+    const response = await getClient(apiKey).messages.create({
       model: MODEL,
       max_tokens: 1500,
       system: `You are a technical interview evaluator. Analyse answers fairly and constructively.
@@ -148,7 +148,7 @@ Analyse and return:
   });
 }
 
-async function generateFinalAnalysis(session, questionsWithAnswers) {
+async function generateFinalAnalysis(session, questionsWithAnswers, apiKey) {
   return withRetry(async () => {
     const answersContext = questionsWithAnswers.map((qa, i) => {
       const analysis = qa.analysis_json ? JSON.parse(qa.analysis_json) : {};
@@ -157,7 +157,7 @@ async function generateFinalAnalysis(session, questionsWithAnswers) {
     Summary: ${analysis.answer_summary || 'No answer provided'}`;
     }).join('\n\n');
 
-    const response = await getClient().messages.create({
+    const response = await getClient(apiKey).messages.create({
       model: MODEL,
       max_tokens: 2500,
       system: `You are a senior hiring analyst. Write detailed, constructive candidate assessments.

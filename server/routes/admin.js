@@ -122,16 +122,29 @@ router.get('/report/:sessionId/download', requireAdmin, (req, res) => {
   }
 });
 
-// ── Settings: API key ────────────────────────────────────────────────────────
+// ── Settings: API key (per-admin) ────────────────────────────────────────────
 router.get('/settings', requireAdmin, (req, res) => {
   try {
-    // Read from DB (persistent) then fall back to env var
     const db = getDb();
     let key = '';
-    try {
-      const setting = db.prepare("SELECT value FROM global_settings WHERE key = 'anthropic_api_key'").get();
-      key = setting?.value || '';
-    } catch {}
+
+    // 1. This admin's own key
+    if (req.adminId) {
+      try {
+        const admin = db.prepare('SELECT api_key FROM admin_accounts WHERE id = ?').get(req.adminId);
+        key = admin?.api_key || '';
+      } catch {}
+    }
+
+    // 2. Fallback: global_settings (legacy)
+    if (!key) {
+      try {
+        const setting = db.prepare("SELECT value FROM global_settings WHERE key = 'anthropic_api_key'").get();
+        key = setting?.value || '';
+      } catch {}
+    }
+
+    // 3. Fallback: env var
     if (!key) key = process.env.ANTHROPIC_API_KEY || '';
 
     const masked = key.length > 12
@@ -150,16 +163,21 @@ router.post('/settings/api-key', requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Invalid key. It should start with sk-ant-' });
     }
 
-    // Save to DB so it persists across redeploys
     const db = getDb();
-    db.prepare(`
-      INSERT INTO global_settings (key, value, updated_at)
-      VALUES ('anthropic_api_key', ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
-    `).run(apiKey);
 
-    // Also set in current process memory
-    process.env.ANTHROPIC_API_KEY = apiKey;
+    if (req.adminId) {
+      // Save to this admin's own row — completely isolated from other admins
+      db.prepare('UPDATE admin_accounts SET api_key = ? WHERE id = ?').run(apiKey, req.adminId);
+    } else {
+      // Legacy single-admin mode: save to global_settings
+      db.prepare(`
+        INSERT INTO global_settings (key, value, updated_at)
+        VALUES ('anthropic_api_key', ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `).run(apiKey);
+      // Also update process env for immediate use
+      process.env.ANTHROPIC_API_KEY = apiKey;
+    }
 
     const masked = apiKey.substring(0, 10) + '…' + apiKey.substring(apiKey.length - 4);
     res.json({ success: true, apiKeyMasked: masked });

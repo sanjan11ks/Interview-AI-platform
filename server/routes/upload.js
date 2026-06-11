@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db/database');
 const { extractTextFromFile } = require('../services/parser');
 const { detectRoleFromResume } = require('../services/claude');
+const { getApiKeyForAdmin } = require('../utils/apiKey');
 const fs = require('fs');
 
 const router = express.Router();
@@ -61,17 +62,7 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
       });
     }
 
-    let roleData;
-    try {
-      roleData = await detectRoleFromResume(resumeText);
-    } catch (err) {
-      if (err.message === 'NO_API_KEY') {
-        return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
-      }
-      throw err;
-    }
-
-    // Resolve admin_id from invite token (if provided)
+    // Resolve admin_id from invite token FIRST so we can use their API key
     const sessionId = uuidv4();
     const db = getDb();
     let adminId = null;
@@ -80,7 +71,21 @@ router.post('/resume', upload.single('resume'), async (req, res) => {
       if (invite) adminId = invite.admin_id;
     }
 
-    const consentIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || null;
+    // Get the API key belonging to this admin (falls back to global/env)
+    const adminApiKey = getApiKeyForAdmin(adminId);
+
+    let roleData;
+    try {
+      roleData = await detectRoleFromResume(resumeText, adminApiKey);
+    } catch (err) {
+      if (err.message === 'NO_API_KEY') {
+        return res.status(503).json({ error: 'No API key configured. Please ask the admin to add their Anthropic API key in the Settings tab.' });
+      }
+      throw err;
+    }
+
+    const consentIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+      || req.socket?.remoteAddress || null;
 
     db.prepare(`
       INSERT INTO sessions (id, candidate_name, candidate_email, resume_path, resume_text, detected_role, experience_level, status, admin_id, invite_token, consent_at, consent_ip)
