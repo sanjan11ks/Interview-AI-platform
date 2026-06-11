@@ -10,7 +10,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
     "client": "cd client && npm run dev",
-    "build": "echo 'Frontend already pre-built'",
+    "build": "cd client && npm ci && npm run build",
     "test": "node tests/test-scenarios.js",
     "init-db": "node server/db/database.js"
   },
