@@ -75,7 +75,7 @@ export default function Upload() {
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 520 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Upload Your Resume</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>We'll analyse your background and tailor the interview to you.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Dasro will analyse your background and tailor the interview to you.</p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -138,24 +138,28 @@ export default function Upload() {
 
           {/* ── Consent section ─────────────────────────────────────────── */}
           <div style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
+            background: 'rgba(59,130,246,0.07)',
+            border: '1.5px solid rgba(59,130,246,0.35)',
             borderRadius: 12,
-            padding: '1.25rem',
+            padding: '1.25rem 1.25rem 1rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.85rem',
+            gap: '0.9rem',
           }}>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
-              🔒 Consent & Data Processing
-            </p>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.1rem' }}>
+              <span style={{ fontSize: '1rem' }}>🔒</span>
+              <span style={{ fontSize: '0.82rem', color: '#93C5FD', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                Required Consents — please tick all three
+              </span>
+            </div>
 
             <ConsentItem checked={consentRecording} onChange={setConsentRecording}>
-              I consent to my video and audio being <strong>recorded</strong> during this interview session for assessment purposes.
+              I consent to my video and audio being <strong style={{ color: '#F9FAFB' }}>recorded</strong> during this interview session for assessment purposes.
             </ConsentItem>
 
             <ConsentItem checked={consentAI} onChange={setConsentAI}>
-              I understand my responses and resume will be <strong>processed by AI</strong> (Claude by Anthropic) to generate an interview assessment. No data is used to train AI models.
+              I understand my responses and resume will be <strong style={{ color: '#F9FAFB' }}>processed by AI</strong> (Claude by Anthropic) to generate an interview assessment. No data is used to train AI models.
             </ConsentItem>
 
             <ConsentItem checked={consentPrivacy} onChange={setConsentPrivacy}>
@@ -163,9 +167,9 @@ export default function Upload() {
               <button
                 type="button"
                 onClick={() => setShowPrivacy(v => !v)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', cursor: 'pointer', padding: 0, fontSize: 'inherit', textDecoration: 'underline' }}
+                style={{ background: 'none', border: 'none', color: '#60A5FA', cursor: 'pointer', padding: 0, fontSize: 'inherit', textDecoration: 'underline', fontWeight: 600 }}
               >
-                Privacy Notice
+                Privacy Notice ↓
               </button>
               , including how my data is stored and my right to request deletion.
             </ConsentItem>
@@ -173,28 +177,43 @@ export default function Upload() {
             {/* Expandable privacy notice */}
             {showPrivacy && (
               <div style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(59,130,246,0.2)',
                 borderRadius: 8,
                 padding: '1rem',
                 fontSize: '0.78rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.7,
+                color: '#D1D5DB',
+                lineHeight: 1.75,
+                marginTop: '0.25rem',
               }}>
-                <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.6rem' }}>Privacy Notice — Interview Platform</p>
-                <p><strong>What we collect:</strong> Your name, email address, CV/resume text, video and audio recordings of your interview responses, and AI-generated assessments of those responses.</p>
+                <p style={{ fontWeight: 700, color: '#F9FAFB', marginBottom: '0.75rem' }}>Privacy Notice — Dasro Interview Platform</p>
+                <p><strong style={{ color: '#F9FAFB' }}>What we collect:</strong> Your name, email, CV/resume text, video/audio recordings of your interview responses, and AI-generated assessments.</p>
                 <br />
-                <p><strong>Purpose:</strong> Data is collected solely to conduct and evaluate your interview. It is shared with the hiring organisation that sent you this link.</p>
+                <p><strong style={{ color: '#F9FAFB' }}>Purpose:</strong> Data is used solely to conduct and evaluate your interview, then shared with the hiring organisation that sent you this link.</p>
                 <br />
-                <p><strong>AI processing:</strong> Your resume text and interview transcripts are sent to Anthropic's Claude API for analysis. Anthropic does not use this data to train its models. See <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>anthropic.com/privacy</a>.</p>
+                <p><strong style={{ color: '#F9FAFB' }}>AI processing:</strong> Resume text and interview transcripts are sent to Anthropic's Claude API for analysis. Anthropic does not use your data to train models. See <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA' }}>anthropic.com/privacy</a>.</p>
                 <br />
-                <p><strong>Retention:</strong> Your data is retained for as long as the hiring organisation requires it to make a hiring decision, typically no longer than 12 months.</p>
+                <p><strong style={{ color: '#F9FAFB' }}>Retention:</strong> Your data is retained for as long as the hiring organisation requires, typically no longer than 12 months.</p>
                 <br />
-                <p><strong>Your rights:</strong> You have the right to access, correct, or request deletion of your personal data at any time. Contact the organisation that sent you this interview link.</p>
+                <p><strong style={{ color: '#F9FAFB' }}>Your rights:</strong> You have the right to access, correct, or request deletion of your data at any time. Contact the organisation that sent you this link.</p>
                 <br />
-                <p><strong>Legal basis:</strong> Processing is based on your explicit consent provided below (GDPR Art. 6(1)(a)).</p>
+                <p><strong style={{ color: '#F9FAFB' }}>Legal basis:</strong> Processing is based on your explicit consent provided below (GDPR Art. 6(1)(a)).</p>
               </div>
             )}
+
+            {/* Progress indicator */}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', paddingTop: '0.25rem', borderTop: '1px solid rgba(59,130,246,0.15)' }}>
+              {[consentRecording, consentAI, consentPrivacy].map((c, i) => (
+                <span key={i} style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: c ? '#10B981' : 'rgba(255,255,255,0.2)',
+                  transition: 'background 0.2s',
+                }} />
+              ))}
+              <span style={{ fontSize: '0.75rem', color: allConsented ? '#6EE7B7' : '#9CA3AF', marginLeft: 4 }}>
+                {allConsented ? '✓ All consents given — you can continue' : `${[consentRecording, consentAI, consentPrivacy].filter(Boolean).length} of 3 consents given`}
+              </span>
+            </div>
           </div>
 
           {error && <p style={{ color: '#EF4444', fontSize: '0.88rem', textAlign: 'center' }}>{error}</p>}
@@ -219,14 +238,36 @@ export default function Upload() {
 
 function ConsentItem({ checked, onChange, children }) {
   return (
-    <label style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', cursor: 'pointer' }}>
+    <label style={{
+      display: 'flex', gap: '0.75rem', alignItems: 'flex-start', cursor: 'pointer',
+      padding: '0.6rem 0.75rem',
+      borderRadius: 8,
+      background: checked ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.04)',
+      border: `1.5px solid ${checked ? 'rgba(16,185,129,0.4)' : 'rgba(255,255,255,0.1)'}`,
+      transition: 'all 0.2s',
+    }}>
+      {/* Custom checkbox visual */}
+      <div style={{
+        width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1,
+        background: checked ? '#10B981' : 'transparent',
+        border: `2px solid ${checked ? '#10B981' : '#6B7280'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.15s',
+      }}>
+        {checked && (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+      {/* Hidden real checkbox for accessibility */}
       <input
         type="checkbox"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
-        style={{ marginTop: '0.15rem', width: 16, height: 16, accentColor: 'var(--accent-blue)', flexShrink: 0 }}
+        style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
       />
-      <span style={{ fontSize: '0.83rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{children}</span>
+      <span style={{ fontSize: '0.84rem', color: checked ? '#D1FAE5' : '#D1D5DB', lineHeight: 1.65 }}>{children}</span>
     </label>
   );
 }
