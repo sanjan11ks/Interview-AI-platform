@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rental Property Decision Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #1a2233;
+    --panel-2: #212b40;
+    --border: #2e3a54;
+    --text: #e8edf7;
+    --muted: #93a1bd;
+    --accent: #4f8cff;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  header { max-width: 1280px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 22px; font-weight: 700; }
+  header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  main { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+  .card h2 { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .card h2 .hint { font-size: 11px; font-weight: 400; color: var(--muted); }
+
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  input, select, textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 52px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px 12px; margin-top: 14px; }
+  legend { font-size: 11px; color: var(--muted); padding: 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+
+  .stars { display: flex; gap: 4px; margin-top: 2px; }
+  .stars button { background: none; border: none; font-size: 20px; cursor: pointer; color: #44506e; padding: 0 2px; line-height: 1; }
+  .stars button.on { color: var(--amber); }
+
+  button.btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  button.btn:hover { filter: brightness(1.1); }
+  button.btn.secondary { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
+  button.btn.danger { background: transparent; border: 1px solid var(--red); color: var(--red); }
+  button.btn.sm { padding: 5px 10px; font-size: 12px; }
+
+  .prop-list { display: flex; flex-direction: column; gap: 10px; }
+  .prop-item {
+    display: flex; align-items: center; gap: 10px; background: var(--panel-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  }
+  .prop-item .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .prop-item .name { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prop-item .meta { font-size: 11px; color: var(--muted); }
+  .prop-item .score-pill { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); }
+  .prop-item input[type="checkbox"] { width: auto; accent-color: var(--accent); }
+  .rank-badge { font-size: 16px; width: 24px; text-align: center; flex: none; }
+
+  .charts { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  #radar-wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center; }
+  #radar-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px; }
+  #radar-legend .item { display: flex; align-items: center; gap: 8px; }
+  #radar-legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; position: sticky; top: 0; background: var(--panel); }
+  td.best { color: var(--green); font-weight: 700; }
+  td.worst { color: var(--red); }
+  .table-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+
+  .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 18px; }
+  .weight label { margin-top: 0; display: flex; justify-content: space-between; }
+  .weight input[type="range"] { padding: 0; accent-color: var(--accent); }
+
+  .verdict { border-left: 4px solid var(--green); background: var(--panel-2); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; line-height: 1.6; }
+  .verdict strong { color: var(--green); }
+  .verdict .warn { color: var(--amber); }
+  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 30px 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12.5px; }
+  .bar-row .lbl { width: 140px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-row .bar { flex: 1; height: 18px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
+  .bar-row .bar > div { height: 100%; border-radius: 5px; transition: width .3s; }
+  .bar-row .val { width: 46px; text-align: right; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🏠 Rental Property Decision Dashboard</h1>
+    <p>Add the places you're considering, rate them, and let the scores + spider chart point to the winner. Data is saved automatically in this browser.</p>
+  </div>
+  <div class="toolbar">
+    <button class="btn secondary" id="btn-export">Export JSON</button>
+    <button class="btn secondary" id="btn-import">Import JSON</button>
+    <input type="file" id="import-file" accept=".json" hidden>
+    <button class="btn danger" id="btn-clear">Clear all</button>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: form + saved properties -->
+  <div style="display:flex; flex-direction:column; gap:20px;">
+    <section class="card" id="form-card">
+      <h2><span id="form-title">Add a property</span><span class="hint">all fields optional except name</span></h2>
+      <form id="prop-form">
+        <input type="hidden" id="f-id">
+        <label for="f-name">Property name *</label>
+        <input id="f-name" required placeholder="e.g. 2BHK near Indiranagar metro">
+        <label for="f-location">Location / address</label>
+        <input id="f-location" placeholder="Area, city">
+
+        <fieldset>
+          <legend>Money (monthly)</legend>
+          <div class="row">
+            <div><label for="f-rent">Rent</label><input id="f-rent" type="number" min="0" placeholder="25000"></div>
+            <div><label for="f-deposit">Deposit (one-time)</label><input id="f-deposit" type="number" min="0" placeholder="100000"></div>
+          </div>
+          <div class="row">
+            <div><label for="f-maint-charge">Maintenance charge</label><input id="f-maint-charge" type="number" min="0" placeholder="2000"></div>
+            <div><label for="f-power-charge">Est. power bill / backup charges</label><input id="f-power-charge" type="number" min="0" placeholder="1500"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Essentials</legend>
+          <label for="f-wifi">Wi-Fi availability</label>
+          <select id="f-wifi">
+            <option value="5">Fiber available / already installed</option>
+            <option value="4">Multiple broadband providers</option>
+            <option value="3" selected>One provider available</option>
+            <option value="2">Only mobile hotspot works well</option>
+            <option value="1">Poor connectivity area</option>
+          </select>
+          <label for="f-power">Power backup</label>
+          <select id="f-power">
+            <option value="5">Full 24×7 backup (whole flat)</option>
+            <option value="3" selected>Partial (lights/fan or common areas)</option>
+            <option value="1">No backup</option>
+          </select>
+          <label for="f-water">Water supply</label>
+          <select id="f-water">
+            <option value="5">24×7, good quality</option>
+            <option value="4" selected>Reliable, fixed timings</option>
+            <option value="3">Occasional shortage</option>
+            <option value="2">Frequent shortage / tanker dependent</option>
+            <option value="1">Major water problems</option>
+          </select>
+          <label for="f-pets">Pet friendly</label>
+          <select id="f-pets">
+            <option value="5">Yes, no restrictions</option>
+            <option value="3">With restrictions / negotiable</option>
+            <option value="0" selected>No pets allowed</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Ratings (1–5 stars)</legend>
+          <div id="star-fields"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Space &amp; other</legend>
+          <div class="row">
+            <div><label for="f-sqft">Carpet area (sq.ft)</label><input id="f-sqft" type="number" min="0" placeholder="950"></div>
+            <div>
+              <label for="f-furnishing">Furnishing</label>
+              <select id="f-furnishing">
+                <option value="5">Fully furnished</option>
+                <option value="3" selected>Semi furnished</option>
+                <option value="1">Unfurnished</option>
+              </select>
+            </div>
+          </div>
+          <label for="f-notes">Notes</label>
+          <textarea id="f-notes" placeholder="Anything else — owner vibes, lease terms, parking…"></textarea>
+        </fieldset>
+
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button class="btn" type="submit" id="btn-save" style="flex:1;">Save property</button>
+          <button class="btn secondary" type="button" id="btn-cancel" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Saved properties <span class="hint">tick up to 4 to compare on the chart</span></h2>
+      <div class="prop-list" id="prop-list"></div>
+    </section>
+  </div>
+
+  <!-- RIGHT: charts & decision -->
+  <div class="charts">
+    <section class="card" id="verdict-card">
+      <h2>Decision helper</h2>
+      <div id="verdict" class="verdict empty">Add at least one property to see a recommendation.</div>
+    </section>
+
+    <section class="card">
+      <h2>Spider comparison <span class="hint">5 = best on every axis</span></h2>
+      <div id="radar-wrap">
+        <svg id="radar" width="460" height="420" viewBox="0 0 460 420"></svg>
+        <div id="radar-legend"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Overall scores</h2>
+      <div id="score-bars"><div class="empty">Nothing to rank yet.</div></div>
+    </section>
+
+    <section class="card">
+      <h2>Side-by-side details <span class="hint">green = best, red = worst per row</span></h2>
+      <div class="table-scroll"><table id="compare-table"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>What matters to you? <span class="hint">weights change the scores &amp; ranking</span></h2>
+      <div class="weights-grid" id="weights"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+/* ---------- model ---------- */
+
+// Star-rated qualitative fields (1–5)
+const STAR_FIELDS = [
+  { key: "maintenance", label: "Maintenance service & staff behaviour" },
+  { key: "safety",      label: "Safety & neighbourhood" },
+  { key: "commute",     label: "Commute / location convenience" },
+  { key: "light",       label: "Ventilation & natural light" },
+  { key: "quiet",       label: "Peace & quiet (5 = silent)" },
+];
+
+// Axes shown on the radar; each returns a 0–5 score.
+// "relative" axes are normalised against the other saved properties.
+const AXES = [
+  { key: "affordability", label: "Affordability",  relative: true },
+  { key: "space",         label: "Space",          relative: true },
+  { key: "wifi",          label: "Wi-Fi" },
+  { key: "power",         label: "Power backup" },
+  { key: "water",         label: "Water supply" },
+  { key: "maintenance",   label: "Maintenance" },
+  { key: "pets",          label: "Pet friendly" },
+  { key: "safety",        label: "Safety" },
+  { key: "commute",       label: "Commute" },
+  { key: "comfort",       label: "Comfort" },       // furnishing + light + quiet
+];
+
+const DEFAULT_WEIGHTS = {
+  affordability: 9, space: 7, wifi: 6, power: 6, water: 7,
+  maintenance: 6, pets: 0, safety: 8, commute: 6, comfort: 5,
+};
+
+const COLORS = ["#4f8cff", "#34d399", "#fbbf24", "#f472b6"];
+const LS_KEY = "rental-dashboard-v1";
+
+let state = load();
+
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS_KEY));
+    if (raw && Array.isArray(raw.properties)) {
+      return { properties: raw.properties, weights: { ...DEFAULT_WEIGHTS, ...(raw.weights || {}) }, selected: raw.selected || [] };
+    }
+  } catch (e) { /* corrupted storage — start fresh */ }
+  return { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [] };
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ---------- scoring ---------- */
+
+function monthlyCost(p) {
+  return (+p.rent || 0) + (+p.maintCharge || 0) + (+p.powerCharge || 0);
+}
+
+// Returns {axisKey: 0..5} for one property, normalised against all saved properties.
+function axisScores(p, all) {
+  const costs = all.map(monthlyCost).filter(c => c > 0);
+  const minCost = costs.length ? Math.min(...costs) : 0;
+  const sqfts = all.map(x => +x.sqft || 0);
+  const maxSqft = Math.max(...sqfts, 0);
+
+  const cost = monthlyCost(p);
+  return {
+    affordability: cost > 0 && minCost > 0 ? (minCost / cost) * 5 : 2.5,
+    space: maxSqft > 0 ? ((+p.sqft || 0) / maxSqft) * 5 : 2.5,
+    wifi: +p.wifi || 0,
+    power: +p.power || 0,
+    water: +p.water || 0,
+    maintenance: +p.maintenance || 0,
+    pets: +p.pets || 0,
+    safety: +p.safety || 0,
+    commute: +p.commute || 0,
+    comfort: ((+p.furnishing || 0) + (+p.light || 0) + (+p.quiet || 0)) / 3,
+  };
+}
+
+// Weighted overall score 0–100.
+function overallScore(scores) {
+  let sum = 0, wsum = 0;
+  for (const ax of AXES) {
+    const w = state.weights[ax.key] || 0;
+    sum += scores[ax.key] * w;
+    wsum += w * 5;
+  }
+  return wsum ? Math.round((sum / wsum) * 100) : 0;
+}
+
+function ranked() {
+  return state.properties
+    .map(p => { const s = axisScores(p, state.properties); return { p, scores: s, total: overallScore(s) }; })
+    .sort((a, b) => b.total - a.total);
+}
+
+/* ---------- form ---------- */
+
+const $ = id => document.getElementById(id);
+const form = $("prop-form");
+let starValues = {};
+
+function buildStarFields() {
+  const wrap = $("star-fields");
+  wrap.innerHTML = "";
+  for (const f of STAR_FIELDS) {
+    starValues[f.key] = 3;
+    const label = document.createElement("label");
+    label.textContent = f.label;
+    const div = document.createElement("div");
+    div.className = "stars";
+    div.dataset.key = f.key;
+    for (let i = 1; i <= 5; i++) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "★";
+      b.dataset.val = i;
+      b.addEventListener("click", () => { starValues[f.key] = i; paintStars(div, i); });
+      div.appendChild(b);
+    }
+    paintStars(div, 3);
+    wrap.append(label, div);
+  }
+}
+function paintStars(div, val) {
+  [...div.children].forEach(b => b.classList.toggle("on", +b.dataset.val <= val));
+}
+function setStars(key, val) {
+  starValues[key] = val;
+  paintStars(document.querySelector(`.stars[data-key="${key}"]`), val);
+}
+
+function readForm() {
+  return {
+    id: $("f-id").value || crypto.randomUUID(),
+    name: $("f-name").value.trim(),
+    location: $("f-location").value.trim(),
+    rent: $("f-rent").value, deposit: $("f-deposit").value,
+    maintCharge: $("f-maint-charge").value, powerCharge: $("f-power-charge").value,
+    wifi: $("f-wifi").value, power: $("f-power").value, water: $("f-water").value,
+    pets: $("f-pets").value, sqft: $("f-sqft").value, furnishing: $("f-furnishing").value,
+    notes: $("f-notes").value.trim(),
+    ...Object.fromEntries(STAR_FIELDS.map(f => [f.key, starValues[f.key]])),
+  };
+}
+
+function fillForm(p) {
+  $("f-id").value = p.id;
+  $("f-name").value = p.name; $("f-location").value = p.location || "";
+  $("f-rent").value = p.rent || ""; $("f-deposit").value = p.deposit || "";
+  $("f-maint-charge").value = p.maintCharge || ""; $("f-power-charge").value = p.powerCharge || "";
+  $("f-wifi").value = p.wifi; $("f-power").value = p.power; $("f-water").value = p.water;
+  $("f-pets").value = p.pets; $("f-sqft").value = p.sqft || ""; $("f-furnishing").value = p.furnishing;
+  $("f-notes").value = p.notes || "";
+  STAR_FIELDS.forEach(f => setStars(f.key, +p[f.key] || 3));
+  $("form-title").textContent = "Edit: " + p.name;
+  $("btn-save").textContent = "Update property";
+  $("btn-cancel").hidden = false;
+  $("form-card").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetForm() {
+  form.reset();
+  $("f-id").value = "";
+  STAR_FIELDS.forEach(f => setStars(f.key, 3));
+  $("form-title").textContent = "Add a property";
+  $("btn-save").textContent = "Save property";
+  $("btn-cancel").hidden = true;
+}
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const p = readForm();
+  if (!p.name) return;
+  const idx = state.properties.findIndex(x => x.id === p.id);
+  if (idx >= 0) state.properties[idx] = p;
+  else {
+    state.properties.push(p);
+    if (state.selected.length < 4) state.selected.push(p.id);
+  }
+  save(); resetForm(); render();
+});
+$("btn-cancel").addEventListener("click", resetForm);
+
+/* ---------- property list ---------- */
+
+function colorFor(id) {
+  const i = state.selected.indexOf(id);
+  return i >= 0 ? COLORS[i] : "#44506e";
+}
+
+function renderList() {
+  const wrap = $("prop-list");
+  wrap.innerHTML = "";
+  const rows = ranked();
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="empty">No properties yet — add your first one on the left.</div>';
+    return;
+  }
+  const medals = ["🥇", "🥈", "🥉"];
+  rows.forEach((r, i) => {
+    const item = document.createElement("div");
+    item.className = "prop-item";
+    const cost = monthlyCost(r.p);
+    item.innerHTML = `
+      <span class="rank-badge">${medals[i] || (i + 1) + "."}</span>
+      <input type="checkbox" title="Show on spider chart" ${state.selected.includes(r.p.id) ? "checked" : ""}>
+      <span class="swatch" style="background:${colorFor(r.p.id)}"></span>
+      <div style="flex:1; min-width:0;">
+        <div class="name">${esc(r.p.name)}</div>
+        <div class="meta">${esc(r.p.location || "")}${cost ? (r.p.location ? " · " : "") + "₹" + cost.toLocaleString("en-IN") + "/mo" : ""}</div>
+      </div>
+      <span class="score-pill" style="color:${scoreColor(r.total)}">${r.total}</span>
+      <button class="btn secondary sm" data-act="edit">Edit</button>
+      <button class="btn danger sm" data-act="del">✕</button>`;
+    item.querySelector('input[type="checkbox"]').addEventListener("change", e => {
+      if (e.target.checked) {
+        if (state.selected.length >= 4) { e.target.checked = false; return; }
+        state.selected.push(r.p.id);
+      } else state.selected = state.selected.filter(id => id !== r.p.id);
+      save(); render();
+    });
+    item.querySelector('[data-act="edit"]').addEventListener("click", () => fillForm(r.p));
+    item.querySelector('[data-act="del"]').addEventListener("click", () => {
+      if (!confirm(`Delete "${r.p.name}"?`)) return;
+      state.properties = state.properties.filter(x => x.id !== r.p.id);
+      state.selected = state.selected.filter(id => id !== r.p.id);
+      save(); render();
+    });
+    wrap.appendChild(item);
+  });
+}
+
+function scoreColor(t) { return t >= 70 ? "var(--green)" : t >= 50 ? "var(--amber)" : "var(--red)"; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+/* ---------- spider / radar chart (pure SVG) ---------- */
+
+function renderRadar() {
+  const svg = $("radar");
+  const legend = $("radar-legend");
+  svg.innerHTML = ""; legend.innerHTML = "";
+  const cx = 230, cy = 205, R = 150;
+  const n = AXES.length;
+  const angle = i => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const pt = (i, r) => [cx + Math.cos(angle(i)) * r, cy + Math.sin(angle(i)) * r];
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  };
+
+  // grid rings
+  for (let ring = 1; ring <= 5; ring++) {
+    const pts = AXES.map((_, i) => pt(i, (R * ring) / 5).join(",")).join(" ");
+    svg.appendChild(el("polygon", { points: pts, fill: "none", stroke: "#2e3a54", "stroke-width": ring === 5 ? 1.5 : 0.7 }));
+  }
+  // spokes + labels
+  AXES.forEach((ax, i) => {
+    const [x, y] = pt(i, R);
+    svg.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#2e3a54", "stroke-width": 0.7 }));
+    const [lx, ly] = pt(i, R + 22);
+    const t = el("text", {
+      x: lx, y: ly, fill: "#93a1bd", "font-size": 11, "text-anchor": "middle", "dominant-baseline": "middle",
+    });
+    t.textContent = ax.label;
+    svg.appendChild(t);
+  });
+
+  const shown = state.properties.filter(p => state.selected.includes(p.id));
+  if (!shown.length) {
+    const t = el("text", { x: cx, y: cy, fill: "#93a1bd", "font-size": 13, "text-anchor": "middle" });
+    t.textContent = "Select properties to compare";
+    svg.appendChild(t);
+    return;
+  }
+
+  shown.forEach(p => {
+    const scores = axisScores(p, state.properties);
+    const color = colorFor(p.id);
+    const pts = AXES.map((ax, i) => pt(i, (Math.max(0, Math.min(5, scores[ax.key])) / 5) * R).join(",")).join(" ");
+    svg.appendChild(el("polygon", { points: pts, fill: color + "33", stroke: color, "stroke-width": 2 }));
+    AXES.forEach((ax, i) => {
+      const [x, y] = pt(i, (Math.max(0, Math.min(5, scores[ax.key])) / 5) * R);
+      svg.appendChild(el("circle", { cx: x, cy: y, r: 3, fill: color }));
+    });
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `<span class="sw" style="background:${color}"></span><span>${esc(p.name)}</span>`;
+    legend.appendChild(item);
+  });
+}
+
+/* ---------- score bars ---------- */
+
+function renderBars() {
+  const wrap = $("score-bars");
+  const rows = ranked();
+  if (!rows.length) { wrap.innerHTML = '<div class="empty">Nothing to rank yet.</div>'; return; }
+  wrap.innerHTML = rows.map(r => `
+    <div class="bar-row">
+      <span class="lbl" title="${esc(r.p.name)}">${esc(r.p.name)}</span>
+      <div class="bar"><div style="width:${r.total}%; background:${scoreColor(r.total)}"></div></div>
+      <span class="val" style="color:${scoreColor(r.total)}">${r.total}</span>
+    </div>`).join("");
+}
+
+/* ---------- verdict ---------- */
+
+function renderVerdict() {
+  const box = $("verdict");
+  const rows = ranked();
+  if (!rows.length) {
+    box.className = "verdict empty";
+    box.textContent = "Add at least one property to see a recommendation.";
+    return;
+  }
+  box.className = "verdict";
+  const top = rows[0];
+  const entries = AXES.map(ax => ({ label: ax.label, v: top.scores[ax.key] })).sort((a, b) => b.v - a.v);
+  const strengths = entries.slice(0, 2).map(e => e.label);
+  const weak = entries[entries.length - 1];
+  let html = `Based on your weights, <strong>${esc(top.p.name)}</strong> is the best pick with a score of <strong>${top.total}/100</strong>. `
+    + `It stands out on <strong>${strengths.join("</strong> and <strong>")}</strong>.`;
+  if (weak.v < 2.5) html += ` <span class="warn">Watch out: its weakest area is ${weak.label} (${weak.v.toFixed(1)}/5).</span>`;
+  if (rows.length > 1) {
+    const gap = top.total - rows[1].total;
+    html += gap <= 5
+      ? ` It's a close call with <strong>${esc(rows[1].p.name)}</strong> (only ${gap} point${gap === 1 ? "" : "s"} behind) — compare them on the spider chart before deciding.`
+      : ` The runner-up, ${esc(rows[1].p.name)}, trails by ${gap} points.`;
+  }
+  box.innerHTML = html;
+}
+
+/* ---------- comparison table ---------- */
+
+const TABLE_ROWS = [
+  { label: "Rent (₹/mo)",            get: p => +p.rent || 0,        fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
+  { label: "Total monthly cost (₹)", get: monthlyCost,              fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
+  { label: "Deposit (₹)",            get: p => +p.deposit || 0,     fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
+  { label: "Power charges (₹/mo)",   get: p => +p.powerCharge || 0, fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
+  { label: "Space (sq.ft)",          get: p => +p.sqft || 0,        fmt: v => v ? v.toLocaleString("en-IN") : "—" },
+  { label: "Wi-Fi",                  get: p => +p.wifi,             fmt: stars },
+  { label: "Power backup",           get: p => +p.power,            fmt: stars },
+  { label: "Water supply",           get: p => +p.water,            fmt: stars },
+  { label: "Pet friendly",           get: p => +p.pets,             fmt: v => v >= 5 ? "✅ Yes" : v >= 3 ? "⚠️ Restricted" : "❌ No" },
+  { label: "Maintenance & staff",    get: p => +p.maintenance,      fmt: stars },
+  { label: "Safety & neighbourhood", get: p => +p.safety,           fmt: stars },
+  { label: "Commute",                get: p => +p.commute,          fmt: stars },
+  { label: "Ventilation & light",    get: p => +p.light,            fmt: stars },
+  { label: "Peace & quiet",          get: p => +p.quiet,            fmt: stars },
+  { label: "Furnishing",             get: p => +p.furnishing,       fmt: v => v >= 5 ? "Full" : v >= 3 ? "Semi" : "None" },
+  { label: "Notes",                  get: p => p.notes || "",       fmt: v => esc(v) || "—", noColor: true },
+];
+function stars(v) { return v ? "★".repeat(Math.round(v)) + "☆".repeat(5 - Math.round(v)) : "—"; }
+
+function renderTable() {
+  const table = $("compare-table");
+  const props = state.properties;
+  if (!props.length) { table.innerHTML = '<tr><td class="empty">Add properties to compare them here.</td></tr>'; return; }
+  const rows = ranked();
+  let html = "<thead><tr><th>Parameter</th>" + rows.map(r => `<th>${esc(r.p.name)}</th>`).join("") + "</tr></thead><tbody>";
+  html += "<tr><td><strong>Overall score</strong></td>" + rows.map(r => `<td style="color:${scoreColor(r.total)}; font-weight:700;">${r.total}/100</td>`).join("") + "</tr>";
+  for (const row of TABLE_ROWS) {
+    const vals = rows.map(r => row.get(r.p));
+    const nums = vals.filter(v => typeof v === "number" && v > 0);
+    let best = null, worst = null;
+    if (!row.noColor && nums.length > 1 && new Set(nums).size > 1) {
+      best = row.lowerBetter ? Math.min(...nums) : Math.max(...nums);
+      worst = row.lowerBetter ? Math.max(...nums) : Math.min(...nums);
+    }
+    html += `<tr><td>${row.label}</td>` + vals.map(v => {
+      const cls = v === best && v > 0 ? "best" : v === worst && v > 0 ? "worst" : "";
+      return `<td class="${cls}">${row.fmt(v)}</td>`;
+    }).join("") + "</tr>";
+  }
+  table.innerHTML = html + "</tbody>";
+}
+
+/* ---------- weights ---------- */
+
+function renderWeights() {
+  const wrap = $("weights");
+  wrap.innerHTML = "";
+  for (const ax of AXES) {
+    const div = document.createElement("div");
+    div.className = "weight";
+    const w = state.weights[ax.key];
+    div.innerHTML = `<label>${ax.label} <span>${w}</span></label>
+      <input type="range" min="0" max="10" step="1" value="${w}">`;
+    div.querySelector("input").addEventListener("input", e => {
+      state.weights[ax.key] = +e.target.value;
+      div.querySelector("span").textContent = e.target.value;
+      save(); renderList(); renderBars(); renderVerdict(); renderTable();
+    });
+    wrap.appendChild(div);
+  }
+}
+
+/* ---------- export / import / clear ---------- */
+
+$("btn-export").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "rental-properties.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("btn-import").addEventListener("click", () => $("import-file").click());
+$("import-file").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data.properties)) throw new Error("bad format");
+      state = { properties: data.properties, weights: { ...DEFAULT_WEIGHTS, ...(data.weights || {}) }, selected: data.selected || [] };
+      save(); render();
+    } catch { alert("Couldn't read that file — expected a JSON export from this dashboard."); }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+$("btn-clear").addEventListener("click", () => {
+  if (!confirm("Delete ALL saved properties and reset weights?")) return;
+  state = { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [] };
+  save(); render();
+});
+
+/* ---------- boot ---------- */
+
+function render() { renderList(); renderRadar(); renderBars(); renderVerdict(); renderTable(); }
+buildStarFields();
+renderWeights();
+render();
+</script>
+</body>
+</html>
