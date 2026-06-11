@@ -168,6 +168,29 @@ router.post('/settings/api-key', requireAdmin, (req, res) => {
   }
 });
 
+// ── SMTP settings ────────────────────────────────────────────────────────────
+router.post('/settings/smtp', requireAdmin, (req, res) => {
+  try {
+    const { host, port, user, pass, from } = req.body;
+    if (!host || !user || !pass) return res.status(400).json({ error: 'host, user and pass are required.' });
+
+    const db = getDb();
+    const upsert = db.prepare(`
+      INSERT INTO global_settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    `);
+    upsert.run('smtp_host', host.trim());
+    upsert.run('smtp_port', String(parseInt(port) || 587));
+    upsert.run('smtp_user', user.trim());
+    upsert.run('smtp_pass', pass);
+    upsert.run('smtp_from', (from || user).trim());
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Branding settings (per admin account) ────────────────────────────────────
 const logoStorage = multer.diskStorage({
   destination: (req, file, cb) => {

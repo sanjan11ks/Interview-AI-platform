@@ -316,6 +316,9 @@ export default function Admin() {
                   value={password} onChange={e => setPassword(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && loginEmail()} />
                 <button className="btn-primary" onClick={loginEmail} style={{ justifyContent: 'center' }}>Login</button>
+                <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  <a href="/forgot-password" style={{ color: 'var(--accent-blue)', textDecoration: 'none' }}>Forgot your password?</a>
+                </p>
               </>
             )}
 
@@ -631,6 +634,8 @@ export default function Admin() {
                 )}
               </div>
 
+              <SmtpSettingsBlock token={token} />
+
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
                 <h4 style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--accent-cyan)' }}>System Info</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.4rem 1rem', fontSize: '0.85rem', marginBottom: '1rem' }}>
@@ -784,6 +789,69 @@ export default function Admin() {
             })}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── SMTP settings block ───────────────────────────────────────────────────────
+function SmtpSettingsBlock({ token }) {
+  const [form, setForm] = useState({ host: '', port: '587', user: '', pass: '', from: '' });
+  const [msg, setMsg] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })); }
+
+  async function save() {
+    setSaving(true); setMsg('');
+    try {
+      const res = await fetch('/api/admin/settings/smtp', {
+        method: 'POST',
+        headers: token?.split('.').length === 3
+          ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          : { 'x-admin-token': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const d = await res.json();
+      if (res.ok) setMsg('✅ SMTP settings saved. Password reset emails are now enabled.');
+      else setMsg(`❌ ${d.error}`);
+    } catch { setMsg('❌ Network error.'); }
+    setSaving(false);
+  }
+
+  return (
+    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+      <h4 style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--accent-cyan)' }}>Email (SMTP) Settings</h4>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '1rem', lineHeight: 1.6 }}>
+        Required for password reset emails. Use Gmail App Password, SendGrid, or any SMTP provider.
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div style={{ gridColumn: '1/3' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>SMTP Host</label>
+          <input className="input" placeholder="smtp.gmail.com" value={form.host} onChange={e => set('host', e.target.value)} />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>Port</label>
+          <input className="input" placeholder="587" value={form.port} onChange={e => set('port', e.target.value)} />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>From Address</label>
+          <input className="input" placeholder="noreply@dasro.ca" value={form.from} onChange={e => set('from', e.target.value)} />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>Username</label>
+          <input className="input" placeholder="your@email.com" value={form.user} onChange={e => set('user', e.target.value)} />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.3rem' }}>Password / App Password</label>
+          <input className="input" type="password" placeholder="••••••••" value={form.pass} onChange={e => set('pass', e.target.value)} />
+        </div>
+      </div>
+      <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <button className="btn-primary" onClick={save} disabled={saving} style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem' }}>
+          {saving ? 'Saving…' : 'Save SMTP Settings'}
+        </button>
+        {msg && <span style={{ fontSize: '0.82rem', color: msg.startsWith('✅') ? '#10B981' : '#EF4444' }}>{msg}</span>}
       </div>
     </div>
   );

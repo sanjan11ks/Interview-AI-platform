@@ -66,6 +66,14 @@ function runMigrations(db) {
       value TEXT NOT NULL,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token TEXT PRIMARY KEY,
+      admin_id TEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      used INTEGER DEFAULT 0,
+      FOREIGN KEY (admin_id) REFERENCES admin_accounts(id)
+    );
   `);
 
   console.log('  ✓ DB migrations applied');
