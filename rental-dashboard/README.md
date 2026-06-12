@@ -1,6 +1,13 @@
-# Rental Property Decision Dashboard
+# Groundwork — Rental Decision Studio
 
-A self-contained, offline-friendly dashboard for comparing rental properties and deciding where to stay.
+A self-contained dashboard for comparing rental properties and deciding where to stay, with optional AI analysis powered by Claude.
+
+## Tabs
+
+1. **Compare** — verdict, spider chart, ranking, side-by-side table, and priority weight sliders.
+2. **Add property** — the data-entry form plus your saved properties (edit / delete / export / import).
+3. **Property details** — a full report card per property: cost breakdown, per-parameter performance bars, strengths, watch-outs, and your notes.
+4. **AI analysis** — sends your data to Claude (`claude-opus-4-8` via the Anthropic API), streams its reasoning live, then renders a structured recommendation: verdict, per-property assessment, hidden trade-offs, and a before-you-sign checklist. Requires your own Anthropic API key (entered in the UI, stored only in your browser's localStorage). The analysis is saved and restored on reload.
 
 ## How to use
 

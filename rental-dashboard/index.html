@@ -3,248 +3,448 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rental Property Decision Dashboard</title>
+<title>Groundwork — Rental Decision Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1420;
-    --panel: #1a2233;
-    --panel-2: #212b40;
-    --border: #2e3a54;
-    --text: #e8edf7;
-    --muted: #93a1bd;
-    --accent: #4f8cff;
-    --green: #34d399;
-    --amber: #fbbf24;
-    --red: #f87171;
-    --radius: 12px;
+    --paper: #F7F4EC;
+    --paper-2: #FFFDF7;
+    --ink: #25211A;
+    --ink-soft: #6B6354;
+    --line: #DAD3C2;
+    --line-strong: #25211A;
+    --green: #2D6A4F;
+    --green-soft: #E3EDE7;
+    --terracotta: #C0532B;
+    --terracotta-soft: #F6E4DB;
+    --amber: #A66A00;
+    --amber-soft: #F4E9D2;
+    --plum: #5B4A82;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Libre Franklin", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
     min-height: 100vh;
-    padding: 24px;
+    font-size: 15px;
+    line-height: 1.5;
   }
-  header { max-width: 1280px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 22px; font-weight: 700; }
-  header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
-  main { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
-  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
 
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
-  .card h2 { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .card h2 .hint { font-size: 11px; font-weight: 400; color: var(--muted); }
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--line-strong);
+    padding: 26px 24px 0;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .masthead .topline {
+    display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(28px, 4.5vw, 40px);
+    letter-spacing: -0.01em;
+  }
+  .masthead h1 em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+  .masthead .kicker {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .masthead .sub { color: var(--ink-soft); font-size: 14px; margin: 6px 0 18px; max-width: 640px; }
 
-  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  /* ---------- tabs ---------- */
+  .tabs { display: flex; gap: 0; overflow-x: auto; }
+  .tabs button {
+    appearance: none; background: none; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink-soft);
+    padding: 12px 18px 14px; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    white-space: nowrap; letter-spacing: 0.01em;
+  }
+  .tabs button .num {
+    font-family: var(--serif); font-style: italic; font-weight: 400; margin-right: 6px; color: var(--terracotta);
+  }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button.active { color: var(--ink); border-bottom-color: var(--terracotta); }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ---------- shared ---------- */
+  .panel {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px;
+    margin-bottom: 22px;
+  }
+  .panel > h2 {
+    font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 4px;
+  }
+  .panel > .panel-sub { color: var(--ink-soft); font-size: 13px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .btn {
+    appearance: none; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 14px;
+    background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+    padding: 10px 20px; border-radius: 3px; letter-spacing: 0.02em;
+  }
+  .btn:hover { background: #3a3428; }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.ghost:hover { background: rgba(0,0,0,0.05); }
+  .btn.accent { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn.accent:hover { filter: brightness(1.1); }
+  .btn.danger { background: transparent; border-color: var(--terracotta); color: var(--terracotta); }
+  .btn.sm { padding: 5px 12px; font-size: 12.5px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); margin: 14px 0 5px; }
   input, select, textarea {
-    width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none;
+    width: 100%; font-family: var(--sans); font-size: 15px; color: var(--ink);
+    background: var(--paper-2); border: 1px solid var(--line); border-bottom: 2px solid var(--line);
+    border-radius: 3px; padding: 9px 11px; outline: none;
   }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 52px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px 12px; margin-top: 14px; }
-  legend { font-size: 11px; color: var(--muted); padding: 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+  input:focus, select:focus, textarea:focus { border-bottom-color: var(--terracotta); }
+  textarea { resize: vertical; min-height: 64px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  fieldset { border: 1px solid var(--line); border-radius: 4px; padding: 4px 16px 16px; margin-top: 20px; }
+  legend { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--terracotta); padding: 0 8px; }
 
-  .stars { display: flex; gap: 4px; margin-top: 2px; }
-  .stars button { background: none; border: none; font-size: 20px; cursor: pointer; color: #44506e; padding: 0 2px; line-height: 1; }
+  .stars { display: flex; gap: 2px; }
+  .stars button { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--line); padding: 0 2px; line-height: 1; }
   .stars button.on { color: var(--amber); }
 
-  button.btn {
-    background: var(--accent); color: #fff; border: none; border-radius: 8px;
-    padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
-  }
-  button.btn:hover { filter: brightness(1.1); }
-  button.btn.secondary { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
-  button.btn.danger { background: transparent; border: 1px solid var(--red); color: var(--red); }
-  button.btn.sm { padding: 5px 10px; font-size: 12px; }
+  .empty-note { color: var(--ink-soft); font-style: italic; font-family: var(--serif); font-size: 16px; text-align: center; padding: 36px 12px; }
 
+  /* ---------- compare tab ---------- */
+  .verdict-panel { border-left: 4px solid var(--green); }
+  .verdict-panel .verdict-text { font-family: var(--serif); font-size: 17px; line-height: 1.65; }
+  .verdict-panel strong { color: var(--green); }
+  .verdict-panel .warn { color: var(--terracotta); }
+
+  #radar-wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: center; }
+  #radar-legend { display: flex; flex-direction: column; gap: 9px; min-width: 170px; font-size: 14px; }
+  #radar-legend .item { display: flex; align-items: center; gap: 9px; }
+  #radar-legend .sw { width: 14px; height: 14px; border-radius: 2px; flex: none; }
+
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 14px; }
+  .bar-row .lbl { width: 160px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .bar-row .bar { flex: 1; height: 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+  .bar-row .bar > div { height: 100%; transition: width .3s; }
+  .bar-row .val { width: 44px; text-align: right; font-family: var(--serif); font-weight: 700; font-size: 17px; }
+
+  table.compare { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.compare th, table.compare td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.compare thead th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+    border-bottom: 2px solid var(--line-strong); position: sticky; top: 0; background: var(--paper-2);
+  }
+  table.compare td.best { color: var(--green); font-weight: 700; }
+  table.compare td.worst { color: var(--terracotta); }
+  .table-scroll { overflow: auto; max-height: 430px; }
+
+  .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 22px; }
+  .weight label { display: flex; justify-content: space-between; margin-top: 0; }
+  .weight input[type="range"] { padding: 0; accent-color: var(--terracotta); border: none; background: transparent; }
+
+  /* ---------- entry tab ---------- */
   .prop-list { display: flex; flex-direction: column; gap: 10px; }
   .prop-item {
-    display: flex; align-items: center; gap: 10px; background: var(--panel-2);
-    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--paper-2); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px;
   }
-  .prop-item .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
-  .prop-item .name { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .prop-item .meta { font-size: 11px; color: var(--muted); }
-  .prop-item .score-pill { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); }
-  .prop-item input[type="checkbox"] { width: auto; accent-color: var(--accent); }
-  .rank-badge { font-size: 16px; width: 24px; text-align: center; flex: none; }
+  .prop-item .swatch { width: 13px; height: 13px; border-radius: 2px; flex: none; }
+  .prop-item .name { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+  .prop-item .meta { font-size: 12.5px; color: var(--ink-soft); }
+  .prop-item .score-pill {
+    font-family: var(--serif); font-size: 16px; font-weight: 700;
+    padding: 2px 12px; border-radius: 999px; border: 1px solid var(--line);
+  }
+  .prop-item input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--green); }
+  .rank-badge { font-family: var(--serif); font-style: italic; width: 30px; text-align: center; flex: none; font-size: 15px; color: var(--ink-soft); }
 
-  .charts { display: grid; grid-template-columns: 1fr; gap: 20px; }
-  #radar-wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center; }
-  #radar-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; min-width: 160px; }
-  #radar-legend .item { display: flex; align-items: center; gap: 8px; }
-  #radar-legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+  /* ---------- details tab ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .chips button {
+    appearance: none; cursor: pointer; font-family: var(--sans); font-size: 13.5px; font-weight: 600;
+    background: var(--paper-2); color: var(--ink); border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 16px;
+  }
+  .chips button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; position: sticky; top: 0; background: var(--panel); }
-  td.best { color: var(--green); font-weight: 700; }
-  td.worst { color: var(--red); }
-  .table-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+  .detail-head { display: flex; flex-wrap: wrap; gap: 20px; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .detail-head h3 { font-family: var(--serif); font-size: 28px; font-weight: 700; }
+  .detail-head .loc { color: var(--ink-soft); font-size: 14px; }
+  .bigscore { font-family: var(--serif); font-size: 44px; font-weight: 700; line-height: 1; }
+  .bigscore small { font-size: 16px; color: var(--ink-soft); font-weight: 400; }
+  .rank-line { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
 
-  .weights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 18px; }
-  .weight label { margin-top: 0; display: flex; justify-content: space-between; }
-  .weight input[type="range"] { padding: 0; accent-color: var(--accent); }
+  .money-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 18px 0; }
+  .money-cell { border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; background: var(--paper-2); }
+  .money-cell .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+  .money-cell .v { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-top: 2px; }
 
-  .verdict { border-left: 4px solid var(--green); background: var(--panel-2); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; line-height: 1.6; }
-  .verdict strong { color: var(--green); }
-  .verdict .warn { color: var(--amber); }
-  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 30px 10px; }
-  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12.5px; }
-  .bar-row .lbl { width: 140px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar-row .bar { flex: 1; height: 18px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
-  .bar-row .bar > div { height: 100%; border-radius: 5px; transition: width .3s; }
-  .bar-row .val { width: 46px; text-align: right; font-weight: 700; }
+  .param-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; font-size: 14px; }
+  .param-row .plbl { width: 200px; flex: none; }
+  .param-row .pbar { flex: 1; height: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+  .param-row .pbar > div { height: 100%; }
+  .param-row .pval { width: 56px; text-align: right; font-weight: 600; font-size: 13px; }
+  .sw-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 700px) { .sw-cols { grid-template-columns: 1fr; } .param-row .plbl { width: 140px; } }
+  .sw-cols h4 { font-family: var(--serif); font-size: 16px; margin-bottom: 8px; }
+  .sw-cols ul { list-style: none; }
+  .sw-cols li { padding: 6px 0 6px 22px; position: relative; font-size: 14px; border-bottom: 1px dotted var(--line); }
+  .sw-cols .good li::before { content: "▲"; color: var(--green); position: absolute; left: 0; font-size: 11px; top: 9px; }
+  .sw-cols .bad li::before { content: "▼"; color: var(--terracotta); position: absolute; left: 0; font-size: 11px; top: 9px; }
+  .notes-block { margin-top: 18px; border-left: 3px solid var(--amber); padding: 8px 14px; background: var(--amber-soft); font-size: 14px; border-radius: 0 4px 4px 0; }
+
+  /* ---------- AI tab ---------- */
+  .key-box { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .key-box input { flex: 1; min-width: 240px; font-family: monospace; font-size: 13px; }
+  .key-status { font-size: 13px; color: var(--ink-soft); }
+  .key-status.ok { color: var(--green); font-weight: 600; }
+
+  .think-box { border: 1px dashed var(--line); border-radius: 4px; margin-top: 18px; background: var(--paper); }
+  .think-box summary {
+    cursor: pointer; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .think-box .think-body { padding: 0 16px 14px; font-size: 13.5px; color: var(--ink-soft); white-space: pre-wrap; font-style: italic; line-height: 1.6; max-height: 320px; overflow-y: auto; }
+
+  .ai-result { margin-top: 18px; font-size: 15px; line-height: 1.7; }
+  .ai-result h2 { font-family: var(--serif); font-size: 22px; margin: 22px 0 8px; }
+  .ai-result h3 { font-family: var(--serif); font-size: 18px; margin: 18px 0 6px; }
+  .ai-result p { margin: 8px 0; }
+  .ai-result ul, .ai-result ol { margin: 8px 0 8px 24px; }
+  .ai-result li { margin: 4px 0; }
+  .ai-result strong { color: var(--green); }
+  .ai-result table { border-collapse: collapse; margin: 12px 0; width: 100%; font-size: 13.5px; }
+  .ai-result th, .ai-result td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; }
+  .ai-result th { background: var(--paper); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .ai-result code { background: var(--paper); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 13px; }
+  .ai-result hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
+  .ai-meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; font-style: italic; }
+  .ai-error { margin-top: 16px; border-left: 3px solid var(--terracotta); background: var(--terracotta-soft); padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 14px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--paper); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toolbar-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>🏠 Rental Property Decision Dashboard</h1>
-    <p>Add the places you're considering, rate them, and let the scores + spider chart point to the winner. Data is saved automatically in this browser.</p>
+<header class="masthead">
+  <div class="topline">
+    <div>
+      <div class="kicker">Rental decision studio</div>
+      <h1>Groundwork<em> — pick the right place.</em></h1>
+    </div>
   </div>
-  <div class="toolbar">
-    <button class="btn secondary" id="btn-export">Export JSON</button>
-    <button class="btn secondary" id="btn-import">Import JSON</button>
-    <input type="file" id="import-file" accept=".json" hidden>
-    <button class="btn danger" id="btn-clear">Clear all</button>
-  </div>
+  <p class="sub">Log every flat you visit, weigh what matters to you, compare them on a spider chart — then let Claude reason through the trade-offs. Everything saves in this browser.</p>
+  <nav class="tabs" id="tabs">
+    <button data-tab="compare" class="active"><span class="num">i.</span>Compare</button>
+    <button data-tab="entry"><span class="num">ii.</span>Add property</button>
+    <button data-tab="details"><span class="num">iii.</span>Property details</button>
+    <button data-tab="ai"><span class="num">iv.</span>AI analysis</button>
+  </nav>
 </header>
 
 <main>
-  <!-- LEFT: form + saved properties -->
-  <div style="display:flex; flex-direction:column; gap:20px;">
-    <section class="card" id="form-card">
-      <h2><span id="form-title">Add a property</span><span class="hint">all fields optional except name</span></h2>
-      <form id="prop-form">
-        <input type="hidden" id="f-id">
-        <label for="f-name">Property name *</label>
-        <input id="f-name" required placeholder="e.g. 2BHK near Indiranagar metro">
-        <label for="f-location">Location / address</label>
-        <input id="f-location" placeholder="Area, city">
 
-        <fieldset>
-          <legend>Money (monthly)</legend>
-          <div class="row">
-            <div><label for="f-rent">Rent</label><input id="f-rent" type="number" min="0" placeholder="25000"></div>
-            <div><label for="f-deposit">Deposit (one-time)</label><input id="f-deposit" type="number" min="0" placeholder="100000"></div>
-          </div>
-          <div class="row">
-            <div><label for="f-maint-charge">Maintenance charge</label><input id="f-maint-charge" type="number" min="0" placeholder="2000"></div>
-            <div><label for="f-power-charge">Est. power bill / backup charges</label><input id="f-power-charge" type="number" min="0" placeholder="1500"></div>
-          </div>
-        </fieldset>
+  <!-- ============ TAB: COMPARE ============ -->
+  <section class="tab-pane active" id="pane-compare">
+    <div class="panel verdict-panel">
+      <h2>The verdict</h2>
+      <div class="verdict-text" id="verdict"><span class="empty-note">Add a property to get started.</span></div>
+    </div>
 
-        <fieldset>
-          <legend>Essentials</legend>
-          <label for="f-wifi">Wi-Fi availability</label>
-          <select id="f-wifi">
-            <option value="5">Fiber available / already installed</option>
-            <option value="4">Multiple broadband providers</option>
-            <option value="3" selected>One provider available</option>
-            <option value="2">Only mobile hotspot works well</option>
-            <option value="1">Poor connectivity area</option>
-          </select>
-          <label for="f-power">Power backup</label>
-          <select id="f-power">
-            <option value="5">Full 24×7 backup (whole flat)</option>
-            <option value="3" selected>Partial (lights/fan or common areas)</option>
-            <option value="1">No backup</option>
-          </select>
-          <label for="f-water">Water supply</label>
-          <select id="f-water">
-            <option value="5">24×7, good quality</option>
-            <option value="4" selected>Reliable, fixed timings</option>
-            <option value="3">Occasional shortage</option>
-            <option value="2">Frequent shortage / tanker dependent</option>
-            <option value="1">Major water problems</option>
-          </select>
-          <label for="f-pets">Pet friendly</label>
-          <select id="f-pets">
-            <option value="5">Yes, no restrictions</option>
-            <option value="3">With restrictions / negotiable</option>
-            <option value="0" selected>No pets allowed</option>
-          </select>
-        </fieldset>
-
-        <fieldset>
-          <legend>Ratings (1–5 stars)</legend>
-          <div id="star-fields"></div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Space &amp; other</legend>
-          <div class="row">
-            <div><label for="f-sqft">Carpet area (sq.ft)</label><input id="f-sqft" type="number" min="0" placeholder="950"></div>
-            <div>
-              <label for="f-furnishing">Furnishing</label>
-              <select id="f-furnishing">
-                <option value="5">Fully furnished</option>
-                <option value="3" selected>Semi furnished</option>
-                <option value="1">Unfurnished</option>
-              </select>
-            </div>
-          </div>
-          <label for="f-notes">Notes</label>
-          <textarea id="f-notes" placeholder="Anything else — owner vibes, lease terms, parking…"></textarea>
-        </fieldset>
-
-        <div style="display:flex; gap:8px; margin-top:14px;">
-          <button class="btn" type="submit" id="btn-save" style="flex:1;">Save property</button>
-          <button class="btn secondary" type="button" id="btn-cancel" hidden>Cancel</button>
+    <div class="grid-2">
+      <div class="panel">
+        <h2>Spider comparison</h2>
+        <p class="panel-sub">Tick properties on the “Add property” tab to overlay up to four. Outer ring = best (5/5).</p>
+        <div id="radar-wrap">
+          <svg id="radar" width="440" height="410" viewBox="0 0 440 410" style="max-width:100%; height:auto;"></svg>
+          <div id="radar-legend"></div>
         </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Saved properties <span class="hint">tick up to 4 to compare on the chart</span></h2>
-      <div class="prop-list" id="prop-list"></div>
-    </section>
-  </div>
-
-  <!-- RIGHT: charts & decision -->
-  <div class="charts">
-    <section class="card" id="verdict-card">
-      <h2>Decision helper</h2>
-      <div id="verdict" class="verdict empty">Add at least one property to see a recommendation.</div>
-    </section>
-
-    <section class="card">
-      <h2>Spider comparison <span class="hint">5 = best on every axis</span></h2>
-      <div id="radar-wrap">
-        <svg id="radar" width="460" height="420" viewBox="0 0 460 420"></svg>
-        <div id="radar-legend"></div>
       </div>
-    </section>
+      <div class="panel">
+        <h2>Ranking</h2>
+        <p class="panel-sub">Weighted score out of 100, using your priorities below.</p>
+        <div id="score-bars"></div>
+      </div>
+    </div>
 
-    <section class="card">
-      <h2>Overall scores</h2>
-      <div id="score-bars"><div class="empty">Nothing to rank yet.</div></div>
-    </section>
+    <div class="panel">
+      <h2>Side by side</h2>
+      <p class="panel-sub">Green is the best value in each row, terracotta the worst.</p>
+      <div class="table-scroll"><table class="compare" id="compare-table"></table></div>
+    </div>
 
-    <section class="card">
-      <h2>Side-by-side details <span class="hint">green = best, red = worst per row</span></h2>
-      <div class="table-scroll"><table id="compare-table"></table></div>
-    </section>
-
-    <section class="card">
-      <h2>What matters to you? <span class="hint">weights change the scores &amp; ranking</span></h2>
+    <div class="panel">
+      <h2>What matters to you?</h2>
+      <p class="panel-sub">Drag to set each factor's weight (0–10). Scores, ranking and the verdict update live.</p>
       <div class="weights-grid" id="weights"></div>
-    </section>
-  </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: DATA ENTRY ============ -->
+  <section class="tab-pane" id="pane-entry">
+    <div class="grid-2">
+      <div class="panel">
+        <h2 id="form-title">Add a property</h2>
+        <p class="panel-sub">Only the name is required — fill in what you know, refine later.</p>
+        <form id="prop-form">
+          <input type="hidden" id="f-id">
+          <label for="f-name">Property name *</label>
+          <input id="f-name" required placeholder="e.g. 2BHK near Indiranagar metro">
+          <label for="f-location">Location / address</label>
+          <input id="f-location" placeholder="Area, city">
+
+          <fieldset>
+            <legend>Money</legend>
+            <div class="row2">
+              <div><label for="f-rent">Rent / month</label><input id="f-rent" type="number" min="0" inputmode="numeric" placeholder="25000"></div>
+              <div><label for="f-deposit">Deposit (one-time)</label><input id="f-deposit" type="number" min="0" inputmode="numeric" placeholder="100000"></div>
+            </div>
+            <div class="row2">
+              <div><label for="f-maint-charge">Maintenance / month</label><input id="f-maint-charge" type="number" min="0" inputmode="numeric" placeholder="2000"></div>
+              <div><label for="f-power-charge">Power bill &amp; backup charges / month</label><input id="f-power-charge" type="number" min="0" inputmode="numeric" placeholder="1500"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Essentials</legend>
+            <label for="f-wifi">Wi-Fi availability</label>
+            <select id="f-wifi">
+              <option value="5">Fiber available / already installed</option>
+              <option value="4">Multiple broadband providers</option>
+              <option value="3" selected>One provider available</option>
+              <option value="2">Only mobile hotspot works well</option>
+              <option value="1">Poor connectivity area</option>
+            </select>
+            <label for="f-power">Power backup</label>
+            <select id="f-power">
+              <option value="5">Full 24×7 backup (whole flat)</option>
+              <option value="3" selected>Partial (lights / fan / common areas)</option>
+              <option value="1">No backup</option>
+            </select>
+            <label for="f-water">Water supply</label>
+            <select id="f-water">
+              <option value="5">24×7, good quality</option>
+              <option value="4" selected>Reliable, fixed timings</option>
+              <option value="3">Occasional shortage</option>
+              <option value="2">Frequent shortage / tanker dependent</option>
+              <option value="1">Major water problems</option>
+            </select>
+            <label for="f-pets">Pet friendly</label>
+            <select id="f-pets">
+              <option value="5">Yes, no restrictions</option>
+              <option value="3">With restrictions / negotiable</option>
+              <option value="0" selected>No pets allowed</option>
+            </select>
+          </fieldset>
+
+          <fieldset>
+            <legend>Ratings</legend>
+            <div id="star-fields"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Space &amp; notes</legend>
+            <div class="row2">
+              <div><label for="f-sqft">Carpet area (sq.ft)</label><input id="f-sqft" type="number" min="0" inputmode="numeric" placeholder="950"></div>
+              <div>
+                <label for="f-furnishing">Furnishing</label>
+                <select id="f-furnishing">
+                  <option value="5">Fully furnished</option>
+                  <option value="3" selected>Semi furnished</option>
+                  <option value="1">Unfurnished</option>
+                </select>
+              </div>
+            </div>
+            <label for="f-notes">Notes</label>
+            <textarea id="f-notes" placeholder="Owner vibes, lease terms, parking, broker fee…"></textarea>
+          </fieldset>
+
+          <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn accent" type="submit" id="btn-save" style="flex:1;">Save property</button>
+            <button class="btn ghost" type="button" id="btn-cancel" hidden>Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Saved properties</h2>
+        <p class="panel-sub">Tick up to four to show them on the spider chart.</p>
+        <div class="prop-list" id="prop-list"></div>
+        <div class="toolbar-row" style="margin-top:18px;">
+          <button class="btn ghost sm" id="btn-export">Export JSON</button>
+          <button class="btn ghost sm" id="btn-import">Import JSON</button>
+          <input type="file" id="import-file" accept=".json" hidden>
+          <button class="btn danger sm" id="btn-clear">Clear all data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: DETAILS ============ -->
+  <section class="tab-pane" id="pane-details">
+    <div class="chips" id="detail-chips"></div>
+    <div id="detail-body"></div>
+  </section>
+
+  <!-- ============ TAB: AI ANALYSIS ============ -->
+  <section class="tab-pane" id="pane-ai">
+    <div class="panel">
+      <h2>Claude's take</h2>
+      <p class="panel-sub">Sends your saved properties and priorities to Claude (model <code>claude-opus-4-8</code>), which reasons through the trade-offs before giving a recommendation. You can watch its reasoning live, then read the verdict.</p>
+
+      <details id="key-details">
+        <summary style="cursor:pointer; font-weight:600; font-size:14px; margin-bottom:10px;">API key setup</summary>
+        <p style="font-size:13.5px; color:var(--ink-soft); margin:8px 0 10px;">
+          Paste an Anthropic API key (starts with <code>sk-ant-</code>). Get one at
+          <a href="https://platform.claude.com" target="_blank" rel="noopener">platform.claude.com</a>.
+          It is stored only in this browser's local storage and sent only to Anthropic's API. Don't use this on a shared computer.
+        </p>
+        <div class="key-box">
+          <input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off">
+          <button class="btn sm" id="btn-save-key">Save key</button>
+          <button class="btn ghost sm" id="btn-forget-key">Forget</button>
+        </div>
+      </details>
+      <div class="key-status" id="key-status" style="margin-top:8px;"></div>
+
+      <div class="toolbar-row" style="margin-top:18px;">
+        <button class="btn accent" id="btn-analyze">Analyze my properties</button>
+        <button class="btn ghost" id="btn-clear-analysis" hidden>Clear analysis</button>
+      </div>
+
+      <div id="ai-error" class="ai-error" hidden></div>
+
+      <details class="think-box" id="think-box" hidden>
+        <summary>Claude's reasoning</summary>
+        <div class="think-body" id="think-body"></div>
+      </details>
+
+      <div class="ai-result" id="ai-result"></div>
+      <div class="ai-meta" id="ai-meta"></div>
+    </div>
+  </section>
+
 </main>
 
-<script>
+<script type="module">
 "use strict";
 
-/* ---------- model ---------- */
+/* ================= model ================= */
 
-// Star-rated qualitative fields (1–5)
 const STAR_FIELDS = [
   { key: "maintenance", label: "Maintenance service & staff behaviour" },
   { key: "safety",      label: "Safety & neighbourhood" },
@@ -253,11 +453,9 @@ const STAR_FIELDS = [
   { key: "quiet",       label: "Peace & quiet (5 = silent)" },
 ];
 
-// Axes shown on the radar; each returns a 0–5 score.
-// "relative" axes are normalised against the other saved properties.
 const AXES = [
-  { key: "affordability", label: "Affordability",  relative: true },
-  { key: "space",         label: "Space",          relative: true },
+  { key: "affordability", label: "Affordability", relative: true },
+  { key: "space",         label: "Space",         relative: true },
   { key: "wifi",          label: "Wi-Fi" },
   { key: "power",         label: "Power backup" },
   { key: "water",         label: "Water supply" },
@@ -265,7 +463,7 @@ const AXES = [
   { key: "pets",          label: "Pet friendly" },
   { key: "safety",        label: "Safety" },
   { key: "commute",       label: "Commute" },
-  { key: "comfort",       label: "Comfort" },       // furnishing + light + quiet
+  { key: "comfort",       label: "Comfort" },
 ];
 
 const DEFAULT_WEIGHTS = {
@@ -273,35 +471,42 @@ const DEFAULT_WEIGHTS = {
   maintenance: 6, pets: 0, safety: 8, commute: 6, comfort: 5,
 };
 
-const COLORS = ["#4f8cff", "#34d399", "#fbbf24", "#f472b6"];
+const COLORS = ["#2D6A4F", "#C0532B", "#5B4A82", "#A66A00"];
 const LS_KEY = "rental-dashboard-v1";
+const LS_KEY_API = "rental-dashboard-apikey";
 
 let state = load();
+let apiKey = localStorage.getItem(LS_KEY_API) || "";
+let detailId = null;       // selected property on details tab
+let analyzing = false;
 
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(LS_KEY));
     if (raw && Array.isArray(raw.properties)) {
-      return { properties: raw.properties, weights: { ...DEFAULT_WEIGHTS, ...(raw.weights || {}) }, selected: raw.selected || [] };
+      return {
+        properties: raw.properties,
+        weights: { ...DEFAULT_WEIGHTS, ...(raw.weights || {}) },
+        selected: raw.selected || [],
+        activeTab: raw.activeTab || "compare",
+        analysis: raw.analysis || null,
+      };
     }
   } catch (e) { /* corrupted storage — start fresh */ }
-  return { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [] };
+  return { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [], activeTab: "compare", analysis: null };
 }
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
-/* ---------- scoring ---------- */
+/* ================= scoring ================= */
 
 function monthlyCost(p) {
   return (+p.rent || 0) + (+p.maintCharge || 0) + (+p.powerCharge || 0);
 }
 
-// Returns {axisKey: 0..5} for one property, normalised against all saved properties.
 function axisScores(p, all) {
   const costs = all.map(monthlyCost).filter(c => c > 0);
   const minCost = costs.length ? Math.min(...costs) : 0;
-  const sqfts = all.map(x => +x.sqft || 0);
-  const maxSqft = Math.max(...sqfts, 0);
-
+  const maxSqft = Math.max(...all.map(x => +x.sqft || 0), 0);
   const cost = monthlyCost(p);
   return {
     affordability: cost > 0 && minCost > 0 ? (minCost / cost) * 5 : 2.5,
@@ -317,7 +522,6 @@ function axisScores(p, all) {
   };
 }
 
-// Weighted overall score 0–100.
 function overallScore(scores) {
   let sum = 0, wsum = 0;
   for (const ax of AXES) {
@@ -334,9 +538,26 @@ function ranked() {
     .sort((a, b) => b.total - a.total);
 }
 
-/* ---------- form ---------- */
-
+function scoreColor(t) { return t >= 70 ? "var(--green)" : t >= 50 ? "var(--amber)" : "var(--terracotta)"; }
+function fmtMoney(v) { return v ? "₹" + (+v).toLocaleString("en-IN") : "—"; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 const $ = id => document.getElementById(id);
+
+/* ================= tabs ================= */
+
+function switchTab(tab) {
+  state.activeTab = tab; save();
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "pane-" + tab));
+  if (tab === "details") renderDetails();
+}
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]");
+  if (b) switchTab(b.dataset.tab);
+});
+
+/* ================= form ================= */
+
 const form = $("prop-form");
 let starValues = {};
 
@@ -352,9 +573,7 @@ function buildStarFields() {
     div.dataset.key = f.key;
     for (let i = 1; i <= 5; i++) {
       const b = document.createElement("button");
-      b.type = "button";
-      b.textContent = "★";
-      b.dataset.val = i;
+      b.type = "button"; b.textContent = "★"; b.dataset.val = i;
       b.addEventListener("click", () => { starValues[f.key] = i; paintStars(div, i); });
       div.appendChild(b);
     }
@@ -362,13 +581,8 @@ function buildStarFields() {
     wrap.append(label, div);
   }
 }
-function paintStars(div, val) {
-  [...div.children].forEach(b => b.classList.toggle("on", +b.dataset.val <= val));
-}
-function setStars(key, val) {
-  starValues[key] = val;
-  paintStars(document.querySelector(`.stars[data-key="${key}"]`), val);
-}
+function paintStars(div, val) { [...div.children].forEach(b => b.classList.toggle("on", +b.dataset.val <= val)); }
+function setStars(key, val) { starValues[key] = val; paintStars(document.querySelector(`.stars[data-key="${key}"]`), val); }
 
 function readForm() {
   return {
@@ -396,7 +610,8 @@ function fillForm(p) {
   $("form-title").textContent = "Edit: " + p.name;
   $("btn-save").textContent = "Update property";
   $("btn-cancel").hidden = false;
-  $("form-card").scrollIntoView({ behavior: "smooth" });
+  switchTab("entry");
+  $("form-title").scrollIntoView({ behavior: "smooth" });
 }
 
 function resetForm() {
@@ -418,15 +633,15 @@ form.addEventListener("submit", e => {
     state.properties.push(p);
     if (state.selected.length < 4) state.selected.push(p.id);
   }
-  save(); resetForm(); render();
+  save(); resetForm(); renderAll();
 });
 $("btn-cancel").addEventListener("click", resetForm);
 
-/* ---------- property list ---------- */
+/* ================= saved list ================= */
 
 function colorFor(id) {
   const i = state.selected.indexOf(id);
-  return i >= 0 ? COLORS[i] : "#44506e";
+  return i >= 0 ? COLORS[i] : "#B9B19F";
 }
 
 function renderList() {
@@ -434,53 +649,50 @@ function renderList() {
   wrap.innerHTML = "";
   const rows = ranked();
   if (!rows.length) {
-    wrap.innerHTML = '<div class="empty">No properties yet — add your first one on the left.</div>';
+    wrap.innerHTML = '<div class="empty-note">Nothing saved yet — your first property goes here.</div>';
     return;
   }
-  const medals = ["🥇", "🥈", "🥉"];
   rows.forEach((r, i) => {
     const item = document.createElement("div");
     item.className = "prop-item";
     const cost = monthlyCost(r.p);
     item.innerHTML = `
-      <span class="rank-badge">${medals[i] || (i + 1) + "."}</span>
+      <span class="rank-badge">no. ${i + 1}</span>
       <input type="checkbox" title="Show on spider chart" ${state.selected.includes(r.p.id) ? "checked" : ""}>
       <span class="swatch" style="background:${colorFor(r.p.id)}"></span>
-      <div style="flex:1; min-width:0;">
+      <div style="flex:1; min-width:140px;">
         <div class="name">${esc(r.p.name)}</div>
-        <div class="meta">${esc(r.p.location || "")}${cost ? (r.p.location ? " · " : "") + "₹" + cost.toLocaleString("en-IN") + "/mo" : ""}</div>
+        <div class="meta">${esc(r.p.location || "")}${cost ? (r.p.location ? " · " : "") + fmtMoney(cost) + "/mo" : ""}</div>
       </div>
       <span class="score-pill" style="color:${scoreColor(r.total)}">${r.total}</span>
-      <button class="btn secondary sm" data-act="edit">Edit</button>
-      <button class="btn danger sm" data-act="del">✕</button>`;
+      <button class="btn ghost sm" data-act="edit">Edit</button>
+      <button class="btn danger sm" data-act="del">Delete</button>`;
     item.querySelector('input[type="checkbox"]').addEventListener("change", e => {
       if (e.target.checked) {
         if (state.selected.length >= 4) { e.target.checked = false; return; }
         state.selected.push(r.p.id);
       } else state.selected = state.selected.filter(id => id !== r.p.id);
-      save(); render();
+      save(); renderAll();
     });
     item.querySelector('[data-act="edit"]').addEventListener("click", () => fillForm(r.p));
     item.querySelector('[data-act="del"]').addEventListener("click", () => {
       if (!confirm(`Delete "${r.p.name}"?`)) return;
       state.properties = state.properties.filter(x => x.id !== r.p.id);
       state.selected = state.selected.filter(id => id !== r.p.id);
-      save(); render();
+      if (detailId === r.p.id) detailId = null;
+      save(); renderAll();
     });
     wrap.appendChild(item);
   });
 }
 
-function scoreColor(t) { return t >= 70 ? "var(--green)" : t >= 50 ? "var(--amber)" : "var(--red)"; }
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-
-/* ---------- spider / radar chart (pure SVG) ---------- */
+/* ================= radar ================= */
 
 function renderRadar() {
   const svg = $("radar");
   const legend = $("radar-legend");
   svg.innerHTML = ""; legend.innerHTML = "";
-  const cx = 230, cy = 205, R = 150;
+  const cx = 220, cy = 200, R = 142;
   const n = AXES.length;
   const angle = i => (Math.PI * 2 * i) / n - Math.PI / 2;
   const pt = (i, r) => [cx + Math.cos(angle(i)) * r, cy + Math.sin(angle(i)) * r];
@@ -491,26 +703,22 @@ function renderRadar() {
     return e;
   };
 
-  // grid rings
   for (let ring = 1; ring <= 5; ring++) {
     const pts = AXES.map((_, i) => pt(i, (R * ring) / 5).join(",")).join(" ");
-    svg.appendChild(el("polygon", { points: pts, fill: "none", stroke: "#2e3a54", "stroke-width": ring === 5 ? 1.5 : 0.7 }));
+    svg.appendChild(el("polygon", { points: pts, fill: "none", stroke: "#DAD3C2", "stroke-width": ring === 5 ? 1.5 : 0.7 }));
   }
-  // spokes + labels
   AXES.forEach((ax, i) => {
     const [x, y] = pt(i, R);
-    svg.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#2e3a54", "stroke-width": 0.7 }));
-    const [lx, ly] = pt(i, R + 22);
-    const t = el("text", {
-      x: lx, y: ly, fill: "#93a1bd", "font-size": 11, "text-anchor": "middle", "dominant-baseline": "middle",
-    });
+    svg.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#DAD3C2", "stroke-width": 0.7 }));
+    const [lx, ly] = pt(i, R + 24);
+    const t = el("text", { x: lx, y: ly, fill: "#6B6354", "font-size": 11.5, "text-anchor": "middle", "dominant-baseline": "middle", "font-family": "Libre Franklin, sans-serif" });
     t.textContent = ax.label;
     svg.appendChild(t);
   });
 
   const shown = state.properties.filter(p => state.selected.includes(p.id));
   if (!shown.length) {
-    const t = el("text", { x: cx, y: cy, fill: "#93a1bd", "font-size": 13, "text-anchor": "middle" });
+    const t = el("text", { x: cx, y: cy, fill: "#6B6354", "font-size": 14, "text-anchor": "middle", "font-style": "italic", "font-family": "Fraunces, Georgia, serif" });
     t.textContent = "Select properties to compare";
     svg.appendChild(t);
     return;
@@ -520,7 +728,7 @@ function renderRadar() {
     const scores = axisScores(p, state.properties);
     const color = colorFor(p.id);
     const pts = AXES.map((ax, i) => pt(i, (Math.max(0, Math.min(5, scores[ax.key])) / 5) * R).join(",")).join(" ");
-    svg.appendChild(el("polygon", { points: pts, fill: color + "33", stroke: color, "stroke-width": 2 }));
+    svg.appendChild(el("polygon", { points: pts, fill: color + "30", stroke: color, "stroke-width": 2 }));
     AXES.forEach((ax, i) => {
       const [x, y] = pt(i, (Math.max(0, Math.min(5, scores[ax.key])) / 5) * R);
       svg.appendChild(el("circle", { cx: x, cy: y, r: 3, fill: color }));
@@ -532,12 +740,12 @@ function renderRadar() {
   });
 }
 
-/* ---------- score bars ---------- */
+/* ================= compare tab ================= */
 
 function renderBars() {
   const wrap = $("score-bars");
   const rows = ranked();
-  if (!rows.length) { wrap.innerHTML = '<div class="empty">Nothing to rank yet.</div>'; return; }
+  if (!rows.length) { wrap.innerHTML = '<div class="empty-note">Nothing to rank yet.</div>'; return; }
   wrap.innerHTML = rows.map(r => `
     <div class="bar-row">
       <span class="lbl" title="${esc(r.p.name)}">${esc(r.p.name)}</span>
@@ -546,59 +754,54 @@ function renderBars() {
     </div>`).join("");
 }
 
-/* ---------- verdict ---------- */
-
 function renderVerdict() {
   const box = $("verdict");
   const rows = ranked();
   if (!rows.length) {
-    box.className = "verdict empty";
-    box.textContent = "Add at least one property to see a recommendation.";
+    box.innerHTML = '<span class="empty-note">Add a property to get started.</span>';
     return;
   }
-  box.className = "verdict";
   const top = rows[0];
   const entries = AXES.map(ax => ({ label: ax.label, v: top.scores[ax.key] })).sort((a, b) => b.v - a.v);
   const strengths = entries.slice(0, 2).map(e => e.label);
   const weak = entries[entries.length - 1];
-  let html = `Based on your weights, <strong>${esc(top.p.name)}</strong> is the best pick with a score of <strong>${top.total}/100</strong>. `
-    + `It stands out on <strong>${strengths.join("</strong> and <strong>")}</strong>.`;
-  if (weak.v < 2.5) html += ` <span class="warn">Watch out: its weakest area is ${weak.label} (${weak.v.toFixed(1)}/5).</span>`;
+  let html = `By your weights, <strong>${esc(top.p.name)}</strong> leads with <strong>${top.total}/100</strong> — strongest on ${strengths.join(" and ")}.`;
+  if (weak.v < 2.5) html += ` <span class="warn">Its weak spot is ${weak.label.toLowerCase()} (${weak.v.toFixed(1)}/5) — verify before committing.</span>`;
   if (rows.length > 1) {
     const gap = top.total - rows[1].total;
     html += gap <= 5
-      ? ` It's a close call with <strong>${esc(rows[1].p.name)}</strong> (only ${gap} point${gap === 1 ? "" : "s"} behind) — compare them on the spider chart before deciding.`
+      ? ` It's a close call with ${esc(rows[1].p.name)} (${gap} point${gap === 1 ? "" : "s"} behind) — worth a second visit to both, or ask Claude to break the tie.`
       : ` The runner-up, ${esc(rows[1].p.name)}, trails by ${gap} points.`;
   }
   box.innerHTML = html;
 }
 
-/* ---------- comparison table ---------- */
-
 const TABLE_ROWS = [
-  { label: "Rent (₹/mo)",            get: p => +p.rent || 0,        fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
-  { label: "Total monthly cost (₹)", get: monthlyCost,              fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
-  { label: "Deposit (₹)",            get: p => +p.deposit || 0,     fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
-  { label: "Power charges (₹/mo)",   get: p => +p.powerCharge || 0, fmt: v => v ? "₹" + v.toLocaleString("en-IN") : "—", lowerBetter: true },
-  { label: "Space (sq.ft)",          get: p => +p.sqft || 0,        fmt: v => v ? v.toLocaleString("en-IN") : "—" },
-  { label: "Wi-Fi",                  get: p => +p.wifi,             fmt: stars },
-  { label: "Power backup",           get: p => +p.power,            fmt: stars },
-  { label: "Water supply",           get: p => +p.water,            fmt: stars },
-  { label: "Pet friendly",           get: p => +p.pets,             fmt: v => v >= 5 ? "✅ Yes" : v >= 3 ? "⚠️ Restricted" : "❌ No" },
-  { label: "Maintenance & staff",    get: p => +p.maintenance,      fmt: stars },
-  { label: "Safety & neighbourhood", get: p => +p.safety,           fmt: stars },
-  { label: "Commute",                get: p => +p.commute,          fmt: stars },
-  { label: "Ventilation & light",    get: p => +p.light,            fmt: stars },
-  { label: "Peace & quiet",          get: p => +p.quiet,            fmt: stars },
-  { label: "Furnishing",             get: p => +p.furnishing,       fmt: v => v >= 5 ? "Full" : v >= 3 ? "Semi" : "None" },
-  { label: "Notes",                  get: p => p.notes || "",       fmt: v => esc(v) || "—", noColor: true },
+  { label: "Rent / month",          get: p => +p.rent || 0,        fmt: fmtMoney, lowerBetter: true },
+  { label: "Total monthly cost",    get: monthlyCost,              fmt: fmtMoney, lowerBetter: true },
+  { label: "Deposit",               get: p => +p.deposit || 0,     fmt: fmtMoney, lowerBetter: true },
+  { label: "Power charges / month", get: p => +p.powerCharge || 0, fmt: fmtMoney, lowerBetter: true },
+  { label: "Space (sq.ft)",         get: p => +p.sqft || 0,        fmt: v => v ? v.toLocaleString("en-IN") : "—" },
+  { label: "Wi-Fi",                 get: p => +p.wifi,             fmt: stars },
+  { label: "Power backup",          get: p => +p.power,            fmt: stars },
+  { label: "Water supply",          get: p => +p.water,            fmt: stars },
+  { label: "Pet friendly",          get: p => +p.pets,             fmt: v => v >= 5 ? "Yes" : v >= 3 ? "Restricted" : "No" },
+  { label: "Maintenance & staff",   get: p => +p.maintenance,      fmt: stars },
+  { label: "Safety & neighbourhood",get: p => +p.safety,           fmt: stars },
+  { label: "Commute",               get: p => +p.commute,          fmt: stars },
+  { label: "Ventilation & light",   get: p => +p.light,            fmt: stars },
+  { label: "Peace & quiet",         get: p => +p.quiet,            fmt: stars },
+  { label: "Furnishing",            get: p => +p.furnishing,       fmt: v => v >= 5 ? "Full" : v >= 3 ? "Semi" : "None" },
+  { label: "Notes",                 get: p => p.notes || "",       fmt: v => esc(v) || "—", noColor: true },
 ];
 function stars(v) { return v ? "★".repeat(Math.round(v)) + "☆".repeat(5 - Math.round(v)) : "—"; }
 
 function renderTable() {
   const table = $("compare-table");
-  const props = state.properties;
-  if (!props.length) { table.innerHTML = '<tr><td class="empty">Add properties to compare them here.</td></tr>'; return; }
+  if (!state.properties.length) {
+    table.innerHTML = '<tr><td><div class="empty-note">Add properties to compare them here.</div></td></tr>';
+    return;
+  }
   const rows = ranked();
   let html = "<thead><tr><th>Parameter</th>" + rows.map(r => `<th>${esc(r.p.name)}</th>`).join("") + "</tr></thead><tbody>";
   html += "<tr><td><strong>Overall score</strong></td>" + rows.map(r => `<td style="color:${scoreColor(r.total)}; font-weight:700;">${r.total}/100</td>`).join("") + "</tr>";
@@ -618,8 +821,6 @@ function renderTable() {
   table.innerHTML = html + "</tbody>";
 }
 
-/* ---------- weights ---------- */
-
 function renderWeights() {
   const wrap = $("weights");
   wrap.innerHTML = "";
@@ -633,12 +834,333 @@ function renderWeights() {
       state.weights[ax.key] = +e.target.value;
       div.querySelector("span").textContent = e.target.value;
       save(); renderList(); renderBars(); renderVerdict(); renderTable();
+      if (state.activeTab === "details") renderDetails();
     });
     wrap.appendChild(div);
   }
 }
 
-/* ---------- export / import / clear ---------- */
+/* ================= details tab ================= */
+
+function renderDetails() {
+  const chips = $("detail-chips");
+  const body = $("detail-body");
+  const rows = ranked();
+  chips.innerHTML = ""; body.innerHTML = "";
+
+  if (!rows.length) {
+    body.innerHTML = '<div class="panel"><div class="empty-note">Add a property first — its full report card will appear here.</div></div>';
+    return;
+  }
+  if (!detailId || !rows.some(r => r.p.id === detailId)) detailId = rows[0].p.id;
+
+  rows.forEach(r => {
+    const b = document.createElement("button");
+    b.textContent = r.p.name;
+    b.classList.toggle("active", r.p.id === detailId);
+    b.addEventListener("click", () => { detailId = r.p.id; renderDetails(); });
+    chips.appendChild(b);
+  });
+
+  const idx = rows.findIndex(r => r.p.id === detailId);
+  const { p, scores, total } = rows[idx];
+
+  const entries = AXES.map(ax => ({ ...ax, v: scores[ax.key], w: state.weights[ax.key] || 0 }));
+  const byScore = [...entries].sort((a, b) => b.v - a.v);
+  const strengths = byScore.filter(e => e.v >= 4).slice(0, 4);
+  const weaknesses = byScore.filter(e => e.v < 3).reverse().slice(0, 4);
+
+  const paramBars = entries.map(e => {
+    const pct = (Math.max(0, Math.min(5, e.v)) / 5) * 100;
+    const color = e.v >= 4 ? "var(--green)" : e.v >= 2.5 ? "var(--amber)" : "var(--terracotta)";
+    return `<div class="param-row">
+      <span class="plbl">${e.label}${e.w === 0 ? ' <span style="color:var(--ink-soft); font-size:11px;">(weight 0)</span>' : ""}</span>
+      <div class="pbar"><div style="width:${pct}%; background:${color}"></div></div>
+      <span class="pval">${e.v.toFixed(1)} / 5</span>
+    </div>`;
+  }).join("");
+
+  body.innerHTML = `
+    <div class="panel">
+      <div class="detail-head">
+        <div>
+          <h3>${esc(p.name)}</h3>
+          <div class="loc">${esc(p.location || "Location not noted")}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="bigscore" style="color:${scoreColor(total)}">${total}<small> /100</small></div>
+          <div class="rank-line">ranked no. ${idx + 1} of ${rows.length}</div>
+        </div>
+      </div>
+
+      <div class="money-grid">
+        <div class="money-cell"><div class="k">Rent / mo</div><div class="v">${fmtMoney(+p.rent)}</div></div>
+        <div class="money-cell"><div class="k">Maintenance / mo</div><div class="v">${fmtMoney(+p.maintCharge)}</div></div>
+        <div class="money-cell"><div class="k">Power / mo</div><div class="v">${fmtMoney(+p.powerCharge)}</div></div>
+        <div class="money-cell"><div class="k">All-in monthly</div><div class="v" style="color:var(--green)">${fmtMoney(monthlyCost(p))}</div></div>
+        <div class="money-cell"><div class="k">Deposit</div><div class="v">${fmtMoney(+p.deposit)}</div></div>
+        <div class="money-cell"><div class="k">Carpet area</div><div class="v">${+p.sqft ? (+p.sqft).toLocaleString("en-IN") + " sq.ft" : "—"}</div></div>
+      </div>
+
+      <h4 style="font-family:var(--serif); font-size:17px; margin:6px 0 12px;">How it performs, parameter by parameter</h4>
+      ${paramBars}
+
+      <div class="sw-cols">
+        <div class="good">
+          <h4>Where it shines</h4>
+          <ul>${strengths.length ? strengths.map(e => `<li>${e.label} — ${e.v.toFixed(1)}/5</li>`).join("") : "<li style='list-style:none;'>No standout strengths (4+/5) yet.</li>"}</ul>
+        </div>
+        <div class="bad">
+          <h4>Watch out for</h4>
+          <ul>${weaknesses.length ? weaknesses.map(e => `<li>${e.label} — ${e.v.toFixed(1)}/5</li>`).join("") : "<li style='list-style:none;'>No red flags below 3/5. Solid all round.</li>"}</ul>
+        </div>
+      </div>
+
+      ${p.notes ? `<div class="notes-block"><strong>Your notes:</strong> ${esc(p.notes)}</div>` : ""}
+
+      <div class="toolbar-row" style="margin-top:20px;">
+        <button class="btn ghost sm" id="detail-edit">Edit this property</button>
+      </div>
+    </div>`;
+
+  $("detail-edit").addEventListener("click", () => fillForm(p));
+}
+
+/* ================= AI analysis ================= */
+
+function renderKeyStatus() {
+  const s = $("key-status");
+  if (apiKey) {
+    s.className = "key-status ok";
+    s.textContent = "API key saved in this browser (…" + apiKey.slice(-4) + ").";
+  } else {
+    s.className = "key-status";
+    s.textContent = "No API key yet — open “API key setup” above to add one.";
+    $("key-details").open = true;
+  }
+}
+
+$("btn-save-key").addEventListener("click", () => {
+  const v = $("api-key").value.trim();
+  if (!v) return;
+  apiKey = v;
+  localStorage.setItem(LS_KEY_API, v);
+  $("api-key").value = "";
+  $("key-details").open = false;
+  renderKeyStatus();
+});
+$("btn-forget-key").addEventListener("click", () => {
+  apiKey = "";
+  localStorage.removeItem(LS_KEY_API);
+  renderKeyStatus();
+});
+
+function analysisPrompt() {
+  const rows = ranked();
+  const data = rows.map((r, i) => ({
+    name: r.p.name,
+    location: r.p.location || null,
+    rank_by_user_weights: i + 1,
+    weighted_score_out_of_100: r.total,
+    money: {
+      rent_per_month: +r.p.rent || null,
+      maintenance_per_month: +r.p.maintCharge || null,
+      power_and_backup_per_month: +r.p.powerCharge || null,
+      total_monthly_cost: monthlyCost(r.p) || null,
+      deposit: +r.p.deposit || null,
+    },
+    carpet_area_sqft: +r.p.sqft || null,
+    ratings_out_of_5: {
+      wifi_availability: +r.p.wifi,
+      power_backup: +r.p.power,
+      water_supply: +r.p.water,
+      pet_friendly: +r.p.pets,
+      maintenance_service_and_staff: +r.p.maintenance,
+      safety_neighbourhood: +r.p.safety,
+      commute_convenience: +r.p.commute,
+      ventilation_natural_light: +r.p.light,
+      peace_and_quiet: +r.p.quiet,
+      furnishing: +r.p.furnishing,
+    },
+    user_notes: r.p.notes || null,
+  }));
+  return `Here are the rental properties I'm deciding between, with my ratings (currency: INR):
+
+${JSON.stringify(data, null, 2)}
+
+My priority weights (0-10, higher = matters more to me):
+${JSON.stringify(state.weights, null, 2)}
+
+Analyze these options for me. Think through the real trade-offs — value for money, hidden costs, lifestyle fit, risks the numbers hide — not just the arithmetic. Then respond in markdown with exactly these sections:
+
+## Verdict
+One short paragraph: which property to take and the single biggest reason why.
+
+## How they stack up
+For each property (best to worst): 2-4 sentences on its real strengths, weaknesses, and who it suits.
+
+## Trade-offs the scores hide
+The non-obvious considerations — e.g. deposit vs monthly cost, a low rating on something hard to fix vs one that's negotiable, missing data I should collect.
+
+## Before you sign
+A short checklist of specific things to verify or negotiate for the recommended property.`;
+}
+
+async function runAnalysis() {
+  if (analyzing) return;
+  const errBox = $("ai-error");
+  errBox.hidden = true;
+
+  if (!state.properties.length) {
+    errBox.hidden = false;
+    errBox.textContent = "Add at least one property on the “Add property” tab first.";
+    return;
+  }
+  if (!apiKey) {
+    errBox.hidden = false;
+    errBox.textContent = "No API key saved. Open “API key setup” above and paste your Anthropic key.";
+    $("key-details").open = true;
+    return;
+  }
+
+  analyzing = true;
+  const btn = $("btn-analyze");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Claude is thinking…';
+  $("ai-result").innerHTML = "";
+  $("ai-meta").textContent = "";
+  const thinkBox = $("think-box");
+  const thinkBody = $("think-body");
+  thinkBody.textContent = "";
+  thinkBox.hidden = false;
+  thinkBox.open = true;
+
+  let thinking = "", text = "";
+  try {
+    const { default: Anthropic } = await import("https://esm.sh/@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+
+    const stream = client.messages.stream({
+      model: "claude-opus-4-8",
+      max_tokens: 16000,
+      thinking: { type: "adaptive", display: "summarized" },
+      system: "You are a sharp, practical rental-housing advisor. The user gives you structured data about flats they are considering. Reason carefully about trade-offs, then give clear, decisive advice in the exact markdown structure they request. Be specific to their data — never generic. Use ₹ for amounts.",
+      messages: [{ role: "user", content: analysisPrompt() }],
+    });
+
+    for await (const event of stream) {
+      if (event.type === "content_block_delta") {
+        if (event.delta.type === "thinking_delta") {
+          thinking += event.delta.thinking;
+          thinkBody.textContent = thinking;
+          thinkBody.scrollTop = thinkBody.scrollHeight;
+        } else if (event.delta.type === "text_delta") {
+          if (!text) thinkBox.open = false; // reasoning done — collapse it, show the answer
+          text += event.delta.text;
+          $("ai-result").innerHTML = mdToHtml(text);
+        }
+      }
+    }
+    const final = await stream.finalMessage();
+    if (final.stop_reason === "refusal") {
+      throw new Error("Claude declined this request. Try rephrasing your notes and analyzing again.");
+    }
+    if (!thinking) thinkBox.hidden = true;
+
+    state.analysis = { text, thinking, at: new Date().toISOString() };
+    save();
+    renderAnalysisMeta();
+    $("btn-clear-analysis").hidden = false;
+  } catch (err) {
+    errBox.hidden = false;
+    const status = err && err.status;
+    if (status === 401) errBox.textContent = "Authentication failed — that API key was rejected. Check it in “API key setup”.";
+    else if (status === 429) errBox.textContent = "Rate limited by the API — wait a minute and try again.";
+    else if (status === 529 || status >= 500) errBox.textContent = "Anthropic's API is temporarily overloaded — try again shortly.";
+    else errBox.textContent = "Analysis failed: " + (err && err.message ? err.message : err) + (navigator.onLine === false ? " (you appear to be offline)" : "");
+    if (!text && !thinking) thinkBox.hidden = true;
+  } finally {
+    analyzing = false;
+    btn.disabled = false;
+    btn.textContent = "Analyze my properties";
+  }
+}
+$("btn-analyze").addEventListener("click", runAnalysis);
+
+$("btn-clear-analysis").addEventListener("click", () => {
+  state.analysis = null; save();
+  $("ai-result").innerHTML = "";
+  $("ai-meta").textContent = "";
+  $("think-box").hidden = true;
+  $("btn-clear-analysis").hidden = true;
+});
+
+function renderAnalysisMeta() {
+  if (!state.analysis) return;
+  const d = new Date(state.analysis.at);
+  $("ai-meta").textContent = "Analysis from " + d.toLocaleString() + ". Re-run after you add or edit properties.";
+}
+
+function restoreAnalysis() {
+  if (!state.analysis) return;
+  $("ai-result").innerHTML = mdToHtml(state.analysis.text || "");
+  if (state.analysis.thinking) {
+    $("think-box").hidden = false;
+    $("think-box").open = false;
+    $("think-body").textContent = state.analysis.thinking;
+  }
+  renderAnalysisMeta();
+  $("btn-clear-analysis").hidden = false;
+}
+
+/* ---------- tiny markdown renderer (headings, lists, tables, bold/italic/code, hr) ---------- */
+function mdInline(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+function mdToHtml(md) {
+  const lines = md.split("\n");
+  let html = "", i = 0;
+  const isTableRow = l => /^\s*\|.*\|\s*$/.test(l);
+  const isSep = l => /^\s*\|?[\s:|-]+\|?\s*$/.test(l) && l.includes("-");
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    const h = line.match(/^(#{1,4})\s+(.*)/);
+    if (h) { const lvl = Math.min(h[1].length + 1, 4); html += `<h${lvl}>${mdInline(h[2])}</h${lvl}>`; i++; continue; }
+    if (/^\s*(---+|\*\*\*+)\s*$/.test(line)) { html += "<hr>"; i++; continue; }
+    if (isTableRow(line) && i + 1 < lines.length && isSep(lines[i + 1])) {
+      const cells = l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => mdInline(c.trim()));
+      html += "<table><thead><tr>" + cells(line).map(c => `<th>${c}</th>`).join("") + "</tr></thead><tbody>";
+      i += 2;
+      while (i < lines.length && isTableRow(lines[i])) {
+        html += "<tr>" + cells(lines[i]).map(c => `<td>${c}</td>`).join("") + "</tr>";
+        i++;
+      }
+      html += "</tbody></table>"; continue;
+    }
+    if (/^\s*[-*]\s+/.test(line)) {
+      html += "<ul>";
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) { html += `<li>${mdInline(lines[i].replace(/^\s*[-*]\s+/, ""))}</li>`; i++; }
+      html += "</ul>"; continue;
+    }
+    if (/^\s*\d+\.\s+/.test(line)) {
+      html += "<ol>";
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) { html += `<li>${mdInline(lines[i].replace(/^\s*\d+\.\s+/, ""))}</li>`; i++; }
+      html += "</ol>"; continue;
+    }
+    const para = [];
+    while (i < lines.length && lines[i].trim() && !/^(#{1,4})\s|^\s*[-*]\s+|^\s*\d+\.\s+/.test(lines[i]) && !(isTableRow(lines[i]) && i + 1 < lines.length && isSep(lines[i + 1]))) {
+      para.push(lines[i]); i++;
+    }
+    html += `<p>${mdInline(para.join(" "))}</p>`;
+  }
+  return html;
+}
+
+/* ================= export / import / clear ================= */
 
 $("btn-export").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -657,25 +1179,40 @@ $("import-file").addEventListener("change", e => {
     try {
       const data = JSON.parse(reader.result);
       if (!Array.isArray(data.properties)) throw new Error("bad format");
-      state = { properties: data.properties, weights: { ...DEFAULT_WEIGHTS, ...(data.weights || {}) }, selected: data.selected || [] };
-      save(); render();
+      state = {
+        properties: data.properties,
+        weights: { ...DEFAULT_WEIGHTS, ...(data.weights || {}) },
+        selected: data.selected || [],
+        activeTab: state.activeTab,
+        analysis: data.analysis || null,
+      };
+      save(); renderAll(); restoreAnalysis();
     } catch { alert("Couldn't read that file — expected a JSON export from this dashboard."); }
   };
   reader.readAsText(file);
   e.target.value = "";
 });
 $("btn-clear").addEventListener("click", () => {
-  if (!confirm("Delete ALL saved properties and reset weights?")) return;
-  state = { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [] };
-  save(); render();
+  if (!confirm("Delete ALL saved properties, weights and the AI analysis?")) return;
+  state = { properties: [], weights: { ...DEFAULT_WEIGHTS }, selected: [], activeTab: "entry", analysis: null };
+  detailId = null;
+  save(); renderAll();
+  $("ai-result").innerHTML = ""; $("ai-meta").textContent = "";
+  $("think-box").hidden = true; $("btn-clear-analysis").hidden = true;
 });
 
-/* ---------- boot ---------- */
+/* ================= boot ================= */
 
-function render() { renderList(); renderRadar(); renderBars(); renderVerdict(); renderTable(); }
+function renderAll() {
+  renderList(); renderRadar(); renderBars(); renderVerdict(); renderTable();
+  if (state.activeTab === "details") renderDetails();
+}
 buildStarFields();
 renderWeights();
-render();
+renderAll();
+renderKeyStatus();
+restoreAnalysis();
+switchTab(state.properties.length ? state.activeTab : "entry");
 </script>
 </body>
 </html>
