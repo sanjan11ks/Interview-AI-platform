@@ -9,24 +9,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #F7F4EC;
-    --paper-2: #FFFDF7;
-    --ink: #25211A;
-    --ink-soft: #6B6354;
-    --line: #DAD3C2;
-    --line-strong: #25211A;
-    --green: #2D6A4F;
-    --green-soft: #E3EDE7;
-    --terracotta: #C0532B;
-    --terracotta-soft: #F6E4DB;
-    --amber: #A66A00;
-    --amber-soft: #F4E9D2;
-    --plum: #5B4A82;
+    --paper: #161310;
+    --paper-2: #1F1B16;
+    --ink: #EDE5D3;
+    --ink-soft: #A2987F;
+    --line: #3B342A;
+    --line-strong: #EDE5D3;
+    --green: #7CC29C;
+    --green-deep: #2D6A4F;
+    --green-soft: #1E2B24;
+    --terracotta: #E0815A;
+    --terracotta-soft: #35211A;
+    --amber: #D9A441;
+    --amber-soft: #2E2618;
+    --plum: #A48FD8;
     --serif: "Fraunces", Georgia, "Times New Roman", serif;
     --sans: "Libre Franklin", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
   body {
     font-family: var(--sans);
     background: var(--paper);
@@ -96,10 +97,10 @@
     background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
     padding: 10px 20px; border-radius: 3px; letter-spacing: 0.02em;
   }
-  .btn:hover { background: #3a3428; }
-  .btn.ghost { background: transparent; color: var(--ink); }
-  .btn.ghost:hover { background: rgba(0,0,0,0.05); }
-  .btn.accent { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn:hover { background: #fffaf0; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink-soft); }
+  .btn.ghost:hover { background: rgba(255,255,255,0.07); }
+  .btn.accent { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
   .btn.accent:hover { filter: brightness(1.1); }
   .btn.danger { background: transparent; border-color: var(--terracotta); color: var(--terracotta); }
   .btn.sm { padding: 5px 12px; font-size: 12.5px; }
@@ -232,7 +233,7 @@
   .ai-result hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
   .ai-meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 14px; font-style: italic; }
   .ai-error { margin-top: 16px; border-left: 3px solid var(--terracotta); background: var(--terracotta-soft); padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 14px; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--paper); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.85); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .toolbar-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
@@ -471,7 +472,7 @@ const DEFAULT_WEIGHTS = {
   maintenance: 6, pets: 0, safety: 8, commute: 6, comfort: 5,
 };
 
-const COLORS = ["#2D6A4F", "#C0532B", "#5B4A82", "#A66A00"];
+const COLORS = ["#7CC29C", "#E0815A", "#A48FD8", "#D9A441"];
 const LS_KEY = "rental-dashboard-v1";
 const LS_KEY_API = "rental-dashboard-apikey";
 
@@ -641,7 +642,7 @@ $("btn-cancel").addEventListener("click", resetForm);
 
 function colorFor(id) {
   const i = state.selected.indexOf(id);
-  return i >= 0 ? COLORS[i] : "#B9B19F";
+  return i >= 0 ? COLORS[i] : "#5C5342";
 }
 
 function renderList() {
@@ -705,20 +706,20 @@ function renderRadar() {
 
   for (let ring = 1; ring <= 5; ring++) {
     const pts = AXES.map((_, i) => pt(i, (R * ring) / 5).join(",")).join(" ");
-    svg.appendChild(el("polygon", { points: pts, fill: "none", stroke: "#DAD3C2", "stroke-width": ring === 5 ? 1.5 : 0.7 }));
+    svg.appendChild(el("polygon", { points: pts, fill: "none", stroke: "#3B342A", "stroke-width": ring === 5 ? 1.5 : 0.7 }));
   }
   AXES.forEach((ax, i) => {
     const [x, y] = pt(i, R);
-    svg.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#DAD3C2", "stroke-width": 0.7 }));
+    svg.appendChild(el("line", { x1: cx, y1: cy, x2: x, y2: y, stroke: "#3B342A", "stroke-width": 0.7 }));
     const [lx, ly] = pt(i, R + 24);
-    const t = el("text", { x: lx, y: ly, fill: "#6B6354", "font-size": 11.5, "text-anchor": "middle", "dominant-baseline": "middle", "font-family": "Libre Franklin, sans-serif" });
+    const t = el("text", { x: lx, y: ly, fill: "#A2987F", "font-size": 11.5, "text-anchor": "middle", "dominant-baseline": "middle", "font-family": "Libre Franklin, sans-serif" });
     t.textContent = ax.label;
     svg.appendChild(t);
   });
 
   const shown = state.properties.filter(p => state.selected.includes(p.id));
   if (!shown.length) {
-    const t = el("text", { x: cx, y: cy, fill: "#6B6354", "font-size": 14, "text-anchor": "middle", "font-style": "italic", "font-family": "Fraunces, Georgia, serif" });
+    const t = el("text", { x: cx, y: cy, fill: "#A2987F", "font-size": 14, "text-anchor": "middle", "font-style": "italic", "font-family": "Fraunces, Georgia, serif" });
     t.textContent = "Select properties to compare";
     svg.appendChild(t);
     return;
